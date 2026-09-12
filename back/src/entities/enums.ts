@@ -1,36 +1,49 @@
-export enum PropertyType {
-  HOUSE = "HOUSE",
-  APARTMENT = "APARTMENT",
-  LAND = "LAND",
-  COMMERCIAL = "COMMERCIAL",
+// Tipos posibles de propiedad.
+export enum TipoPropiedad {
+  CASA = "CASA",
+  DEPARTAMENTO = "DEPARTAMENTO",
+  TERRENO = "TERRENO",
+  LOCAL = "LOCAL",
 }
 
-export enum OperationType {
-  SALE = "SALE",
-  RENT = "RENT",
+// Tipos de operación posibles.
+export enum TipoOperacion {
+  VENTA = "VENTA",
+  ALQUILER = "ALQUILER",
 }
 
-export enum PropertyStatus {
-  DRAFT = "DRAFT",
-  PUBLISHED = "PUBLISHED",
-  RESERVED = "RESERVED",
-  PAUSED = "PAUSED",
-  SOLD = "SOLD",
-  RENTED = "RENTED",
-  CANCELLED = "CANCELLED",
+// Estados posibles de una propiedad.
+export enum EstadoPropiedad {
+  BORRADOR = "BORRADOR",
+  PUBLICADA = "PUBLICADA",
+  RESERVADA = "RESERVADA",
+  PAUSADA = "PAUSADA",
+  VENDIDA = "VENDIDA",
+  ALQUILADA = "ALQUILADA",
+  CANCELADA = "CANCELADA",
 }
 
-export enum VisitRequestStatus {
-  PENDING = "PENDING",
-  CONFIRMED = "CONFIRMED",
-  COMPLETED = "COMPLETED",
-  CANCELLED = "CANCELLED",
-  REJECTED = "REJECTED",
+// Estados posibles de una solicitud de visita.
+export enum EstadoSolicitudVisita {
+  PENDIENTE = "PENDIENTE",
+  CONFIRMADA = "CONFIRMADA",
+  REALIZADA = "REALIZADA",
+  CANCELADA = "CANCELADA",
+  RECHAZADA = "RECHAZADA",
 }
 
-export enum ActivityType {
-  COMMENT = "COMMENT",
-  VISIT_REQUEST = "VISIT_REQUEST",
-  PROPERTY_STATUS_CHANGE = "PROPERTY_STATUS_CHANGE",
-  REVIEW = "REVIEW",
+// Tipos de actividad/notificación que puede recibir una inmobiliaria.
+export enum TipoActividad {
+
+  // Se creó un nuevo comentario en una propiedad.
+  COMENTARIO = "COMENTARIO",
+
+  // Alguien pidió visitar una propiedad.
+  SOLICITUD_VISITA = "SOLICITUD_VISITA",
+
+  // Una propiedad cambió de estado.
+  CAMBIO_ESTADO_PROPIEDAD = "CAMBIO_ESTADO_PROPIEDAD",
+
+  // Alguien dejó una nueva reseña.
+  RESENA = "RESENA",
 }
