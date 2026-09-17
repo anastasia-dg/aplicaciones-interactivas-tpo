@@ -34,7 +34,7 @@ export class Propiedad {
   id!: string;
 
   // Título de la publicación.
-  @Column({ length: 160 })
+  @Column({ type: "varchar", length: 160 })
   titulo!: string;
 
   // Descripción completa de la propiedad.
@@ -69,15 +69,15 @@ export class Propiedad {
 
   // Moneda utilizada.
   // Solo permitimos ARS o USD desde TypeScript.
-  @Column({ length: 3 })
+  @Column({ type: "varchar", length: 3 })
   moneda!: "ARS" | "USD";
 
   // Dirección de la propiedad.
-  @Column({ length: 255 })
+  @Column({ type: "varchar", length: 255 })
   direccion!: string;
 
   // Localidad, zona o barrio.
-  @Column({ length: 120 })
+  @Column({ type: "varchar", length: 120 })
   zona!: string;
 
   // Superficie cubierta.
@@ -196,7 +196,7 @@ export class Propiedad {
     (historial) => historial.propiedad
   )
   historialEstados!: HistorialEstadoPropiedad[];
-  
+
 
   // Fecha automática en la que se creó la propiedad.
   @CreateDateColumn()

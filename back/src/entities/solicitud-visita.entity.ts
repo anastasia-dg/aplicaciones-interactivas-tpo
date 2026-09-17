@@ -24,13 +24,13 @@ export class SolicitudVisita {
   id!: string;
 
   // Nombre de la persona que solicita la visita.
-  @Column({ length: 120 })
+  @Column({ type: "varchar", length: 120 })
   nombreSolicitante!: string;
 
   // Teléfono de la persona interesada.
   //
   // Es obligatorio
-  @Column({ length: 40 })
+  @Column({ type: "varchar", length: 40 })
   telefonoSolicitante!: string;
 
   // Fecha y hora que propone el interesado. (se valida en el servicio)

@@ -20,7 +20,7 @@ export class FotoPropiedad {
   id!: string;
 
   // Dirección donde se encuentra guardada la imagen.
-  @Column({ length: 500 })
+  @Column({ type: "varchar", length: 500 })
   url!: string;
 
   // Indica la posición de la foto dentro de la galería.
@@ -31,7 +31,7 @@ export class FotoPropiedad {
   // de la publicación.
   //
   // Por defecto una foto no es portada.
-  @Column({ default: false })
+  @Column({ type: "boolean", default: false })
   esPortada!: boolean;
 
   // Muchas fotos pueden pertenecer

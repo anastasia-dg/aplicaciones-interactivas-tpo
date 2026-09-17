@@ -29,7 +29,7 @@ export class Reseña {
   id!: string;
 
   // Nombre de la persona que escribió la reseña.
-  @Column({ length: 120 })
+  @Column({ type: "varchar", length: 120 })
   nombreAutor!: string;
 
   // Contenido de la reseña.

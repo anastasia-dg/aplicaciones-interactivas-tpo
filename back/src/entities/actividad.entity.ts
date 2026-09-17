@@ -51,7 +51,7 @@ export class Actividad {
   // esta notificación.
   //
   // Cuando se crea empieza como no leída.
-  @Column({ default: false })
+  @Column({ type: "boolean", default: false })
   leida!: boolean;
 
   // Muchas actividades pueden pertenecer

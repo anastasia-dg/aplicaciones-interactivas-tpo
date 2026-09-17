@@ -23,23 +23,23 @@ export class Vendedor {
 
   // Columna para guardar el nombre completo del vendedor.
   // Puede tener como máximo 120 caracteres.
-  @Column({ length: 120 })
+  @Column({ type: "varchar", length: 120 })
   nombreCompleto!: string;
 
   // Columna para guardar el email.
   // unique: true significa que no puede haber dos vendedores
   // con el mismo email.
-  @Column({ unique: true, length: 255 })
+  @Column({ type: "varchar", unique: true, length: 255 })
   email!: string;
 
   // Acá se guarda la contraseña en formato hash.
   // No se debería guardar la contraseña directamente.
-  @Column({ length: 255 })
+  @Column({ type: "varchar", length: 255 })
   contrasenaHash!: string;
 
   // Teléfono del vendedor.
   // nullable: true significa que puede quedar vacío.
-  @Column({ nullable: true, length: 40 })
+  @Column({ type: "varchar", nullable: true, length: 40 })
   telefono!: string | null;
 
   //RELACION CON INMOBILIARIA
@@ -49,7 +49,7 @@ export class Vendedor {
     (inmobiliaria) => inmobiliaria.vendedor
   )
   inmobiliaria!: Inmobiliaria;
-  
+
 
   // Guarda automáticamente la fecha en la que se creó el vendedor.
   @CreateDateColumn()

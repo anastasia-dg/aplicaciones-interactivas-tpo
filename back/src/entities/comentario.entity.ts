@@ -22,7 +22,7 @@ export class Comentario {
 
   // Nombre de la persona interesada
   // que realiza la consulta.
-  @Column({ length: 120 })
+  @Column({ type: "varchar", length: 120 })
   nombreAutor!: string;
 
   // Pregunta o contenido del comentario.

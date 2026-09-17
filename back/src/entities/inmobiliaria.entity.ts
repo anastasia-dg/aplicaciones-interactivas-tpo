@@ -25,7 +25,7 @@ export class Inmobiliaria {
 
   // Nombre de fantasía de la inmobiliaria.
   // unique: true porque no puede repetirse.
-  @Column({ unique: true, length: 120 })
+  @Column({ type: "varchar", unique: true, length: 120 })
   nombre!: string;
 
   // Descripción de la inmobiliaria.
@@ -34,20 +34,20 @@ export class Inmobiliaria {
 
   // Dirección URL donde se encuentra el logo.
   // Es opcional.
-  @Column({ nullable: true, length: 500 })
+  @Column({ type: "varchar", nullable: true, length: 500 })
   urlLogo!: string | null;
 
   // Teléfono público de contacto.
-  @Column({ length: 40 })
+  @Column({ type: "varchar", length: 40 })
   telefonoContacto!: string;
 
   // Email público de contacto.
-  @Column({ length: 255 })
+  @Column({ type: "varchar", length: 255 })
   emailContacto!: string;
 
   // Dirección de la oficina.
   // Es opcional.
-  @Column({ nullable: true, length: 255 })
+  @Column({ type: "varchar", nullable: true, length: 255 })
   direccionOficina!: string | null;
 
   
