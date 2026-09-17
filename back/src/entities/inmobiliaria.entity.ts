@@ -4,13 +4,16 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
 
-// Importamos la entidad Vendedor,
-// porque una inmobiliaria está relacionada con un vendedor.
+//importamos entidades que vamos a relacionar
 import { Vendedor } from "./vendedor.entity";
+import { Propiedad } from "./propiedad.entity";
+import { Reseña } from "./reseña.entity";
+import { Actividad } from "./actividad.entity";
 
 // Esta clase representa la tabla "inmobiliarias".
 @Entity("inmobiliarias")
@@ -26,7 +29,6 @@ export class Inmobiliaria {
   nombre!: string;
 
   // Descripción de la inmobiliaria.
-  // type: "text" permite guardar textos más largos.
   @Column({ type: "text" })
   descripcion!: string;
 
@@ -43,21 +45,46 @@ export class Inmobiliaria {
   @Column({ length: 255 })
   emailContacto!: string;
 
-  // Dirección física de la oficina.
+  // Dirección de la oficina.
   // Es opcional.
   @Column({ nullable: true, length: 255 })
   direccionOficina!: string | null;
 
-  // Relación uno a uno con Vendedor.
-  // Significa que cada inmobiliaria tiene un vendedor asociado.
-  @OneToOne(() => Vendedor, { nullable: false })
+  
+  // RELACION CON VENDEDOR (uno a uno)
+  //cada inmobiliaria tiene un vendedor
+  @OneToOne(
+  () => Vendedor,
+  (vendedor) => vendedor.inmobiliaria, //del lado del vendedor la relacion se llama inmobiliaria
+  { nullable: false }
+)
+@JoinColumn({ name: "vendedor_id" })
+vendedor!: Vendedor;
 
-  // Define el nombre de la columna que guarda
-  // la referencia al vendedor en la base de datos.
-  @JoinColumn({ name: "vendedor_id" })
+  //RELACION CON PROPIEDAD
+  // Una inmobiliaria puede tener muchas propiedades.
+  @OneToMany(
+    () => Propiedad,
+    (propiedad) => propiedad.inmobiliaria
+  )
+  propiedades!: Propiedad[];
 
-  // Acá queda guardado el vendedor relacionado.
-  vendedor!: Vendedor;
+  //RELACION CON RESENA
+  // Una inmobiliaria puede recibir muchas resenas.
+  @OneToMany(
+    () => Reseña,
+    (reseña) => reseña.inmobiliaria
+  )
+  reseñas!: Reseña[];
+
+  //RELACION CON ACTIVIDAD
+  // Una inmobiliaria puede tener muchas actividades
+  @OneToMany(
+    () => Actividad,
+    (actividad) => actividad.inmobiliaria
+  )
+  actividades!: Actividad[]; 
+
 
   // Fecha automática de creación de la inmobiliaria.
   @CreateDateColumn()

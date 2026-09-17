@@ -5,8 +5,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
+
+import { Inmobiliaria } from "./inmobiliaria.entity";
 
 // @Entity indica que esta clase representa una tabla de la base de datos.
 // En este caso, la tabla se va a llamar "vendedores".
@@ -38,6 +41,15 @@ export class Vendedor {
   // nullable: true significa que puede quedar vacío.
   @Column({ nullable: true, length: 40 })
   telefono!: string | null;
+
+  //RELACION CON INMOBILIARIA
+  //Un vendedor tiene una inmobiliaria
+  @OneToOne(
+    () => Inmobiliaria,
+    (inmobiliaria) => inmobiliaria.vendedor
+  )
+  inmobiliaria!: Inmobiliaria;
+  
 
   // Guarda automáticamente la fecha en la que se creó el vendedor.
   @CreateDateColumn()

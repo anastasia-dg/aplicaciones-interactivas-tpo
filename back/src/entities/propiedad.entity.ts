@@ -5,13 +5,17 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 
-// Importamos Inmobiliaria porque
-// cada propiedad pertenece a una inmobiliaria.
+//importamos las entidades que vamos a relacionar
 import { Inmobiliaria } from "./inmobiliaria.entity";
+import { FotoPropiedad } from "./foto-propiedad.entity";
+import { Comentario } from "./comentario.entity";
+import { SolicitudVisita } from "./solicitud-visita.entity";
+import { HistorialEstadoPropiedad } from "./historial-estado-propiedad.entity";
 
 // Importamos los enums para limitar
 // los valores posibles de tipo, operación y estado.
@@ -147,8 +151,7 @@ export class Propiedad {
   })
   estado!: EstadoPropiedad;
 
-  // Relación muchos a uno.
-  //
+  //RELACION CON INMOBILIARIA
   // Muchas propiedades pueden pertenecer
   // a una misma inmobiliaria.
   @ManyToOne(() => Inmobiliaria, {
@@ -160,6 +163,40 @@ export class Propiedad {
 
   // Inmobiliaria dueña de esta propiedad.
   inmobiliaria!: Inmobiliaria;
+
+  //RELACION CON FOTOS
+  //una propiedad puede tener muchas fotos
+  @OneToMany(
+    () => FotoPropiedad,
+    (foto) => foto.propiedad
+  )
+  fotos!: FotoPropiedad[];
+
+  //RELACION CON COMENTARIOS
+  //una propiedad puede recibir muchos comentarios
+  @OneToMany(
+    () => Comentario,
+    (comentario) => comentario.propiedad
+  )
+  comentarios!: Comentario[];
+
+
+  //RELACION CON SOLICITUDES DE VISITA
+  //una propiedad puede recibir muchas solicitudes de visita
+  @OneToMany(
+    () => SolicitudVisita,
+    (solicitud) => solicitud.propiedad
+  )
+  solicitudesVisita!: SolicitudVisita[];
+
+  //RELACION CON HISTORIAL DE ESTADOS
+  //una propiedad puede tener muchos registros en el historial
+  @OneToMany(
+    () => HistorialEstadoPropiedad,
+    (historial) => historial.propiedad
+  )
+  historialEstados!: HistorialEstadoPropiedad[];
+  
 
   // Fecha automática en la que se creó la propiedad.
   @CreateDateColumn()
