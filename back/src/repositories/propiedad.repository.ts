@@ -1,5 +1,6 @@
 import { AppDataSource } from "../config/data-source";
 import { Propiedad } from "../entities/propiedad.entity";
+import { TipoPropiedad } from "../entities/enums";
 
 const repo = AppDataSource.getRepository(Propiedad);
 
@@ -10,6 +11,21 @@ export const propiedadRepository = {
     repo.findOne({
       where: { id },
       relations: ["fotos", "comentarios", "inmobiliaria", "solicitudesVisita"],
+    }),
+    
+  buscarPorTipo: (
+    tipo: TipoPropiedad,
+    page: number,
+    limit: number
+  ) =>
+    repo.find({ 
+      where: { tipo },
+      relations: ["fotos", "inmobiliaria"],
+      // Saltea las propiedades de las páginas anteriores
+      skip: (page - 1) * limit,
+
+      // Cantidad de propiedades por página
+      take: limit,
     }),
 
   crear: (datos: Partial<Propiedad>) => repo.save(repo.create(datos)),
