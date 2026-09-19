@@ -38,6 +38,18 @@ class InmobiliariaRepository {
     });
   }
 
+  // Busca una inmobiliaria según el ID del vendedor.
+  buscarPorVendedor(vendedorId: number): Promise<Inmobiliaria | null> {
+    return this.repository.findOne({
+      where: {
+        vendedor: {
+          id: vendedorId,
+        },
+      },
+      relations: ["vendedor"],
+    });
+  }
+
   // Recibe datos para crear una nueva inmobiliaria.
   crear(datos: Partial<Inmobiliaria>): Promise<Inmobiliaria> {
 

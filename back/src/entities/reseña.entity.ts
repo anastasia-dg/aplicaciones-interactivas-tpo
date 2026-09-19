@@ -23,8 +23,7 @@ import { Inmobiliaria } from "./inmobiliaria.entity";
 @Check(`"calificacion" >= 1 AND "calificacion" <= 5`)
 export class Reseña {
 
-  // Identificador único de la reseña.
-  // Se genera automáticamente como UUID.
+  //clave primaria automatica de la tabla
   @PrimaryGeneratedColumn()
   id!: number;
 

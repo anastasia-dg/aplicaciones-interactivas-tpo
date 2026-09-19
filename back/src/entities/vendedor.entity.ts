@@ -16,8 +16,7 @@ import { Inmobiliaria } from "./inmobiliaria.entity";
 @Entity("vendedores")
 export class Vendedor {
 
-  // Esta será la clave primaria de la tabla.
-  // Se genera automáticamente como UUID.
+  //clave primaria automatica de la tabla
   @PrimaryGeneratedColumn()
   id!: number;
 
