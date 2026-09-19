@@ -18,8 +18,8 @@ export class Vendedor {
 
   // Esta será la clave primaria de la tabla.
   // Se genera automáticamente como UUID.
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   // Columna para guardar el nombre completo del vendedor.
   // Puede tener como máximo 120 caracteres.

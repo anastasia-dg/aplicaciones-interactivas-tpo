@@ -16,8 +16,8 @@ import { Propiedad } from "./propiedad.entity";
 export class FotoPropiedad {
 
   // Identificador único de la foto.
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   // Dirección donde se encuentra guardada la imagen.
   @Column({ type: "varchar", length: 500 })

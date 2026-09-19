@@ -20,8 +20,8 @@ import { Actividad } from "./actividad.entity";
 export class Inmobiliaria {
 
   // Clave primaria generada automáticamente.
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   // Nombre de fantasía de la inmobiliaria.
   // unique: true porque no puede repetirse.

@@ -22,6 +22,8 @@ import cors from "cors";
 // Ese router contiene las rutas de nuestra API.
 import { router } from "./routes";
 
+import { AppDataSource } from "./config/data-source";
+
 
 // Crea la aplicación de Express.
 //
@@ -68,12 +70,18 @@ app.use(router);
 //
 // "listen" significa que el servidor queda esperando
 // peticiones en el puerto definido anteriormente.
-app.listen(port, () => {
+AppDataSource.initialize()
+  .then(() => {
+    console.log("Data source initialized");
 
-  // Este mensaje aparece en la terminal
-  // cuando el servidor arrancó correctamente.
-  console.log(`API running on http://localhost:${port}`);
-});
+    app.listen(port, () => {
+      console.log(`API running on http://localhost:${port}`);
+    });
+  })
+  .catch((error: unknown) => {
+    console.error("Error initializing data source", error);
+    process.exit(1);
+  });
 
 
 // Exporta la aplicación Express.

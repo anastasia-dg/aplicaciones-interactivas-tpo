@@ -21,8 +21,8 @@ import { Inmobiliaria } from "./inmobiliaria.entity";
 export class Actividad {
 
   // Identificador único de la actividad.
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   // Indica qué tipo de evento ocurrió.
   //

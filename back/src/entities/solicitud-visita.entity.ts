@@ -20,8 +20,8 @@ import { EstadoSolicitudVisita } from "./enums";
 export class SolicitudVisita {
 
   // Identificador único de la solicitud.
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   // Nombre de la persona que solicita la visita.
   @Column({ type: "varchar", length: 120 })

@@ -1,20 +1,59 @@
+import { Repository } from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { Vendedor } from "../entities/vendedor.entity";
 
-const repo = AppDataSource.getRepository(Vendedor);
+class VendedorRepository {
 
-export const vendedorRepository = {
+  // Obtiene el repository de TypeORM correspondiente a Vendedor.
+  // Se obtiene cuando lo necesitamos y no al cargar el archivo.
+  private get repository(): Repository<Vendedor> {
+    return AppDataSource.getRepository(Vendedor);
+  }
 
-  listar: () => repo.find({ relations: ["inmobiliaria"] }),
+  // Busca TODOS los vendedores.
+  listar(): Promise<Vendedor[]> {
+    return this.repository.find({
+      relations: ["inmobiliaria"],
+    });
+  }
 
-  buscarPorId: (id: string) =>
-    repo.findOne({ where: { id }, relations: ["inmobiliaria"] }),
+  // Busca UN vendedor según su ID.
+  buscarPorId(id: number): Promise<Vendedor | null> {
+    return this.repository.findOne({
+      where: { id },
+      relations: ["inmobiliaria"],
+    });
+  }
 
-  buscarPorEmail: (email: string) => repo.findOne({ where: { email } }),
 
-  crear: (datos: Partial<Vendedor>) => repo.save(repo.create(datos)),
+  // Busca un vendedor según su email. Sirve para verificar si hay un vendedor con ese email
+  buscarPorEmail(email: string): Promise<Vendedor | null> {
+    return this.repository.findOne({
+      where: { email },
+    });
+  }
 
-  actualizar: (vendedor: Vendedor) => repo.save(vendedor),
+  // Recibe los datos necesarios para crear un vendedor.
+  crear(datos: Partial<Vendedor>): Promise<Vendedor> {
 
-  eliminar: (id: string) => repo.delete(id),
-};
+    // create() crea el objeto Vendedor en memoria.
+    const vendedor = this.repository.create(datos);
+
+    // save() guarda el vendedor en la base de datos.
+    return this.repository.save(vendedor);
+  }
+
+  // Guarda los cambios realizados sobre un vendedor existente.
+  actualizar(vendedor: Vendedor): Promise<Vendedor> {
+    return this.repository.save(vendedor);
+  }
+
+  // Elimina un vendedor de la base de datos según su ID.
+  eliminar(id: number) {
+    return this.repository.delete(id);
+  }
+}
+
+
+// Creamos una instancia para poder utilizar este repository
+export const vendedorRepository = new VendedorRepository();

@@ -17,8 +17,8 @@ import { Propiedad } from "./propiedad.entity";
 export class Comentario {
 
   // Identificador único del comentario.
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   // Nombre de la persona interesada
   // que realiza la consulta.

@@ -30,8 +30,8 @@ import {
 export class Propiedad {
 
   // Clave primaria generada automáticamente.
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   // Título de la publicación.
   @Column({ type: "varchar", length: 160 })

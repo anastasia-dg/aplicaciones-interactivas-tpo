@@ -1,23 +1,63 @@
+// Repository es el tipo que nos da TypeORM para trabajar con una entidad
+import { Repository } from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { Inmobiliaria } from "../entities/inmobiliaria.entity";
 
-const repo = AppDataSource.getRepository(Inmobiliaria);
 
-export const inmobiliariaRepository = {
+class InmobiliariaRepository {
 
-  listar: () => repo.find({ relations: ["vendedor"] }),
+  // Obtiene el repository de TypeORM correspondiente a Inmobiliaria.
+  private get repository(): Repository<Inmobiliaria> {
+    return AppDataSource.getRepository(Inmobiliaria);
+  }
 
-  buscarPorId: (id: string) =>
-    repo.findOne({
+  // Busca TODAS las inmobiliarias.
+  listar(): Promise<Inmobiliaria[]> {
+    return this.repository.find({
+      relations: ["vendedor"],
+    });
+  }
+
+  // Busca UNA inmobiliaria por su ID.
+  //
+  // Devuelve:
+  // - Inmobiliaria si existe
+  // - null si no la encuentra
+  buscarPorId(id: number): Promise<Inmobiliaria | null> {
+    return this.repository.findOne({
       where: { id },
       relations: ["vendedor", "propiedades", "reseñas"],
-    }),
+    });
+  }
 
-  buscarPorNombre: (nombre: string) => repo.findOne({ where: { nombre } }),
 
-  crear: (datos: Partial<Inmobiliaria>) => repo.save(repo.create(datos)),
+  // Busca una inmobiliaria por su nombre.
+  buscarPorNombre(nombre: string): Promise<Inmobiliaria | null> {
+    return this.repository.findOne({
+      where: { nombre },
+    });
+  }
 
-  actualizar: (inmobiliaria: Inmobiliaria) => repo.save(inmobiliaria),
+  // Recibe datos para crear una nueva inmobiliaria.
+  crear(datos: Partial<Inmobiliaria>): Promise<Inmobiliaria> {
 
-  eliminar: (id: string) => repo.delete(id),
-};
+    // create() crea el objeto Inmobiliaria en memoria.
+    const inmobiliaria = this.repository.create(datos);
+
+    // save() guarda ese objeto en la base de datos.
+    return this.repository.save(inmobiliaria);
+  }
+
+  // Guarda los cambios de una inmobiliaria existente.
+  actualizar(inmobiliaria: Inmobiliaria): Promise<Inmobiliaria> {
+    return this.repository.save(inmobiliaria);
+  }
+
+  // Elimina una inmobiliaria según su ID.
+  eliminar(id: number) {
+    return this.repository.delete(id);
+  }
+}
+
+// Creamos una instancia para poder usar este repository
+export const inmobiliariaRepository = new InmobiliariaRepository();

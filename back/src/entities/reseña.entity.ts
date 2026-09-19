@@ -25,8 +25,8 @@ export class Reseña {
 
   // Identificador único de la reseña.
   // Se genera automáticamente como UUID.
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   // Nombre de la persona que escribió la reseña.
   @Column({ type: "varchar", length: 120 })

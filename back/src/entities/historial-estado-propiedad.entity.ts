@@ -21,8 +21,8 @@ import { EstadoPropiedad } from "./enums";
 export class HistorialEstadoPropiedad {
 
   // Identificador único del cambio.
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   // Estado que tenía la propiedad antes del cambio.
   @Column({
