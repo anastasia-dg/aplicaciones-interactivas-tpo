@@ -3,6 +3,15 @@
 // Router sirve para crear y organizar
 // las rutas que va a tener nuestra API.
 import { Router } from "express";
+import { actividadRouter } from "./actividad.routes";
+import { comentarioRouter } from "./comentario.routes";
+import { fotoPropiedadRouter } from "./foto-propiedad.routes";
+import { historialEstadoPropiedadRouter} from "./historial-estado-propiedad.routes";
+import { inmobiliariaRouter } from "./inmobiliaria.routes";
+import { propiedadRouter } from "./propiedad.routes";
+import { resenaRouter } from "./resena.routes";
+import { solicitudVisitaRouter } from "./solicitud-visita.routes";
+import { vendedorRouter } from "./vendedor.routes";
 
 
 // Crea un router.
@@ -35,3 +44,65 @@ router.get("/health", (_request, response) => {
 // }
   response.json({ status: "ok" });
 });
+
+// ACTIVIDADES
+router.use(
+  "/actividades",
+  actividadRouter
+);
+
+
+// COMENTARIOS
+router.use(
+  "/comentarios",
+  comentarioRouter
+);
+
+
+// FOTOS DE PROPIEDADES
+router.use(
+  "/fotos-propiedad",
+  fotoPropiedadRouter
+);
+
+
+// HISTORIAL DE ESTADOS
+router.use(
+  "/historial-estados-propiedad",
+  historialEstadoPropiedadRouter
+);
+
+
+// INMOBILIARIAS
+router.use(
+  "/inmobiliarias",
+  inmobiliariaRouter
+);
+
+
+// PROPIEDADES
+router.use(
+  "/propiedades",
+  propiedadRouter
+);
+
+
+// RESEÑAS
+router.use(
+  "/resenas",
+  resenaRouter
+);
+
+
+// SOLICITUDES DE VISITA
+router.use(
+  "/solicitudes-visita",
+  solicitudVisitaRouter
+);
+
+
+// VENDEDORES
+router.use(
+  "/vendedores",
+  vendedorRouter
+);
