@@ -31,9 +31,10 @@ export class Vendedor {
   @Column({ type: "varchar", unique: true, length: 255 })
   email!: string;
 
-  // Acá se guarda la contraseña en formato hash.
-  // No se debería guardar la contraseña directamente.
-  @Column({ type: "varchar", length: 255 })
+  // Acá se guarda la contraseña en formato hash
+  // No se guarda la contra directamente
+  //select: false es para que el hash no aparezca en las respuestas que mandamos al frontend
+  @Column({ type: "varchar", length: 255, select: false,})
   contrasenaHash!: string;
 
   // Teléfono del vendedor.

@@ -68,20 +68,18 @@ class VendedorService {
     const contrasenaHash =
         await bcrypt.hash(datos.contrasena, 10);
 
-    // Ahora mandamos al Repository los datos
-    // que realmente necesita nuestra Entity Vendedor
-    return vendedorRepository.crear({
-
-        nombreCompleto: datos.nombreCompleto,
-
-        email: datos.email,
-
-        // Guardamos el HASH, no la contraseña original
-        contrasenaHash: contrasenaHash,
-
-        // Si no mandaron teléfono, guardamos null
-        telefono: datos.telefono ?? null,
+    // mandamos al Repository los datos que necesita nuestra Entity Vendedor
+    // Guardamos el vendedor en la base de datos
+    const vendedorCreado = await vendedorRepository.crear({
+      nombreCompleto: datos.nombreCompleto,
+      email: datos.email,
+      contrasenaHash: contrasenaHash,
+      telefono: datos.telefono ?? null,
     });
+
+    // Lo volvemos a buscar
+    // Como contrasenaHash tiene "select: false", esta consulta ya NO trae el hash.
+    return this.buscarPorId(vendedorCreado.id);
     }
 
   // ACTUALIZAR VENDEDOR
@@ -139,7 +137,6 @@ class VendedorService {
 
 
     // Con telefono usamos !== undefined porque:
-    //
     // undefined = no mandaron el campo ->  no lo modificamos
     // null      = lo mandaron en null -> quieren borrar el teléfono
     // string    = quieren cambiarlo
@@ -148,9 +145,12 @@ class VendedorService {
     }
 
 
-    // Finalmente le pedimos al Repository que guarde los cambios
-    return vendedorRepository.actualizar(vendedor);
-    }
+    // Guardamos los cambios
+    await vendedorRepository.actualizar(vendedor);
+
+    // Lo volvemos a buscar para devolverlo sin contrasenaHash
+    return this.buscarPorId(id);
+ }
 
 
   // Elimina un vendedor.

@@ -27,7 +27,7 @@ vendedorRouter.get(
   vendedorController.buscarPorId
 );
 
-// PUT /vendedores/:id
+// PATCH /vendedores/:id
 vendedorRouter.patch(
   "/:id",
   vendedorController.actualizar

@@ -21,7 +21,7 @@ inmobiliariaRouter.get(
   inmobiliariaController.buscarPorId
 );
 
-// PUT /inmobiliarias/:id
+// PATCH /inmobiliarias/:id
 inmobiliariaRouter.patch(
   "/:id",
   inmobiliariaController.actualizar
