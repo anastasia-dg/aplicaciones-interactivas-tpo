@@ -1,5 +1,10 @@
 import { fotoPropiedadRepository } from "../repositories/foto-propiedad.repository";
 import { FotoPropiedad } from "../entities/foto-propiedad.entity";
+import { propiedadRepository } from "../repositories/propiedad.repository";
+import {
+  CrearFotoPropiedadDto,
+  ActualizarFotoPropiedadDto,
+} from "../dtos/foto-propiedad-dto";
 
 class FotoPropiedadService {
 
@@ -37,16 +42,30 @@ class FotoPropiedadService {
 
 
   // CREAR FOTO
-  async crear(datos: Partial<FotoPropiedad>): Promise<FotoPropiedad> {
+    async crear(propiedadId: number, datos: CrearFotoPropiedadDto): Promise<FotoPropiedad> {
 
-    // Service manda los datos
-    // al Repository para crear la foto.
-    return fotoPropiedadRepository.crear(datos);
-  }
+    // Buscamos la propiedad a la que queremos agregarle la foto.
+    const propiedad =
+        await propiedadRepository.buscarPorId(propiedadId);
+
+    // Si la propiedad no existe, no podemos agregarle una foto.
+    if (!propiedad) {
+        throw new Error("Propiedad no encontrada");
+    }
+
+    // Creamos la foto con los datos validados por el DTO y la relacionamos con la propiedad.
+    return fotoPropiedadRepository.crear({
+        url: datos.url,
+        orden: datos.orden,
+        // Si no mandaron esPortada, queda false.
+        esPortada: datos.esPortada ?? false,
+        propiedad: propiedad,
+    });
+ }
 
 
   //ACTUALIZAR FOTO
-  async actualizar(id: number, datos: Partial<FotoPropiedad>): Promise<FotoPropiedad> {
+  async actualizar( id: number, datos: ActualizarFotoPropiedadDto): Promise<FotoPropiedad> {
 
     // Primero comprobamos que la foto realmente exista.
     // Usamos this.buscarPorId() porque ese método ya tiene

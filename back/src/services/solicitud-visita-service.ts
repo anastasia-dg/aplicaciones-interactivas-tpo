@@ -3,6 +3,7 @@ import { propiedadRepository } from "../repositories/propiedad.repository";
 import { actividadService } from "./actividad-service";
 import { SolicitudVisita } from "../entities/solicitud-visita.entity";
 import { EstadoSolicitudVisita, TipoActividad,} from "../entities/enums";
+import { CrearSolicitudVisitaDto } from "../dtos/solicitud-visita-dto";
 
 
 class SolicitudVisitaService {
@@ -35,7 +36,7 @@ class SolicitudVisitaService {
 
 
   //CREAR UNA SOLICITUD DE VISITA
-    async crear(propiedadId: number, datos: Partial<SolicitudVisita>): Promise<SolicitudVisita> {
+    async crear( propiedadId: number,  datos: CrearSolicitudVisitaDto): Promise<SolicitudVisita> {
 
     //Comprobamos que la propiedad exista
     const propiedad = await propiedadRepository.buscarPorId(propiedadId);
@@ -65,16 +66,17 @@ class SolicitudVisitaService {
 
     //Creamos la solicitud
     const solicitud = await solicitudVisitaRepository.crear({
-
-        // Copiamos los datos
-        ...datos,
-
+        // Datos que ya fueron validados por el DTO.
+        nombreSolicitante: datos.nombreSolicitante,
+        telefonoSolicitante: datos.telefonoSolicitante,
+        fechaHoraPropuesta: datos.fechaHoraPropuesta,
+        // Si no mandaron mensaje, guardamos null.
+        mensaje: datos.mensaje ?? null,
         // Asociamos la propiedad que ya comprobamos que existe.
         propiedad: propiedad,
-
-        // Toda solicitud nueva comienza PENDIENTE.
+        // Toda solicitud nueva comienza siempre como PENDIENTE.
         estado: EstadoSolicitudVisita.PENDIENTE,
-      });
+    });
 
 
     //generamos una actividad

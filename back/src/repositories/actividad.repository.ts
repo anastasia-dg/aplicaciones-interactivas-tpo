@@ -31,16 +31,21 @@ class ActividadRepository {
   //
   // sirve para mostrar el feed de actividad
   // de un vendedor/inmobiliaria.
-  buscarPorInmobiliaria(inmobiliariaId: number): Promise<Actividad[]> {
+    buscarPorInmobiliaria(inmobiliariaId: number): Promise<Actividad[]> {
     return this.repository.find({
-      where: {
+        where: {
         inmobiliaria: {
-          id: inmobiliariaId,
+            id: inmobiliariaId,
         },
-      },
-      relations: ["inmobiliaria"],
+        },
+        relations: ["inmobiliaria"],
+
+        // Mostramos primero las actividades más recientes.
+        order: {
+        fechaCreacion: "DESC",
+        },
     });
-  }
+ }
 
   // Recibe los datos necesarios para crear una nueva actividad.
   crear(datos: Partial<Actividad>): Promise<Actividad> {

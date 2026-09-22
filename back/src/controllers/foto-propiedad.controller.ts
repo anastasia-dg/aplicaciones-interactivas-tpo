@@ -74,21 +74,39 @@ export const fotoPropiedadController = {
 
   async crear(req: Request, res: Response) {
     try {
-      const datos = crearFotoPropiedadSchema.parse(req.body);
 
+      // El ID de la propiedad viene en la URL.
+      const propiedadId = Number(req.params.propiedadId);
+
+      if (isNaN(propiedadId)) {
+        return res.status(400).json({
+          message: "El ID de propiedad debe ser un número",
+        });
+      }
+
+      // Validamos los datos de la foto con el DTO.
+      const datos =
+        crearFotoPropiedadSchema.parse(req.body);
+
+      // Mandamos al Service el ID de la propiedad
+      // y los datos ya validados de la foto.
       const foto =
-        await fotoPropiedadService.crear(datos);
+        await fotoPropiedadService.crear(
+          propiedadId,
+          datos
+        );
 
-      res.status(201).json(foto);
+      return res.status(201).json(foto);
+
     } catch (error) {
-      res.status(400).json({
+
+      return res.status(400).json({
         message: error instanceof Error
           ? error.message
           : "Error al crear foto",
       });
     }
   },
-
 
   async actualizar(req: Request, res: Response) {
     try {

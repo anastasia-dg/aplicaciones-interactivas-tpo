@@ -1,235 +1,244 @@
 import { propiedadRepository } from "../repositories/propiedad.repository";
-// Necesitamos las solicitudes de visita para controlar si una propiedad tiene una visita CONFIRMADA.
 import { solicitudVisitaRepository } from "../repositories/solicitud-visita.repository";
-// Service del historial lo usamos cada vez que cambia el estado de una propiedad.
-import { historialEstadoPropiedadService } from "./historial-estado-propiedad-service";
-// Service de actividad lo usamos para generar una actividad cuando cambia el estado de una propiedad.
+import { historialEstadoPropiedadRepository } from "../repositories/historial-estado-propiedad.repository";
 import { actividadService } from "./actividad-service";
+import { inmobiliariaService } from "./inmobiliaria-service";
 import { Propiedad } from "../entities/propiedad.entity";
 import {
   EstadoPropiedad,
+  TipoPropiedad,
+  TipoOperacion,
   EstadoSolicitudVisita,
   TipoActividad,
-  TipoOperacion,
-  TipoPropiedad,
 } from "../entities/enums";
+import {
+  CrearPropiedadDto,
+  ActualizarPropiedadDto,
+} from "../dtos/propiedad-dto";
+import { fotoPropiedadRepository } from "../repositories/foto-propiedad.repository";
 
 
 class PropiedadService {
 
-  //LISTAR TODAS LAS PROPIEDADES
-  listar(): Promise<Propiedad[]> {
+  // Devuelve todas las propiedades
+  async listar(): Promise<Propiedad[]> {
     return propiedadRepository.listar();
   }
 
-  //BUSCAR UNA PROPIEDAD POR ID
+
+  // Busca una propiedad por su ID
   async buscarPorId(id: number): Promise<Propiedad> {
     const propiedad = await propiedadRepository.buscarPorId(id);
-    // Si no existe, da error
+
     if (!propiedad) {
       throw new Error("Propiedad no encontrada");
     }
+
     return propiedad;
   }
 
 
-  //CREAR UNA PROPIEDAD
-  async crear(datos: Partial<Propiedad>): Promise<Propiedad> {
+  // CREAR UNA PROPIEDAD
+  async crear(datos: CrearPropiedadDto): Promise<Propiedad> {
 
-    //VALIDAR PRECIO
-    // La entidad guarda el decimal como string, por eso usamos Number() para convertirlo a número.
-    if (
-      datos.precio === undefined || //si precio esta vacio
-      Number(datos.precio) <= 0 // o si precio es menor a 0:
-    ) {
-      throw new Error( //da error
-        "El precio de la propiedad debe ser mayor a 0"
-      );
+    // Buscamos la inmobiliaria usando el ID que llegó en el DTO
+    const inmobiliaria = await inmobiliariaService.buscarPorId(datos.inmobiliariaId);
+
+    // El precio debe ser mayor a 0
+    if (datos.precio <= 0) {
+      throw new Error("El precio debe ser mayor a 0");
     }
 
-
-    //VALIDAR SUPERFICIE TOTAL
-
-    // Si viene una superficie total, tiene que ser mayor a 0.
-    if (
-      datos.superficieTotalM2 !== undefined && //si tiene un valor y ese valor es menor a 0: 
-      Number(datos.superficieTotalM2) <= 0
-    ) {
-      throw new Error( //da error
-        "La superficie total debe ser mayor a 0"
-      );
+    // La superficie total debe ser mayor a 0
+    if (datos.superficieTotalM2 <= 0) {
+      throw new Error("La superficie total debe ser mayor a 0");
     }
 
-
-    //VALIDAR SUPERFICIE CUBIERTA
-
-    // Si viene una superficie cubierta tiene que ser mayor a 0.
+    // Si mandaron superficie cubierta, debe ser mayor a 0
     if (
-      datos.superficieCubiertaM2 !== undefined && //si tiene un valor 
-      datos.superficieCubiertaM2 !== null && //y no es null
-      Number(datos.superficieCubiertaM2) <= 0 //y es menor a 0
+      datos.superficieCubiertaM2 != null &&
+      datos.superficieCubiertaM2 <= 0
     ) {
-      throw new Error( //da error
-        "La superficie cubierta debe ser mayor a 0"
-      );
+      throw new Error("La superficie cubierta debe ser mayor a 0");
     }
 
+    // Preparamos estos valores porque si es un terreno despues los tenemos que cambiar a null
+    //let por si necesitamos cambiarlo
+    let superficieCubiertaM2 = 
+      datos.superficieCubiertaM2 != null // mandaron algo
+        ? String(datos.superficieCubiertaM2) //si: hacer string
+        : null; //no: hacer null
 
-    //REGLAS PARA TERRENO
-    // Si es un TERRENO, no corresponde guardar:
-    // - superficie cubierta
-    // - ambientes
-    // - dormitorios
-    // - baños
-    // porque esos datos no aplican a un terreno.
+    let ambientes = datos.ambientes ?? null; //si datos.ambientes tiene un valor, usalo, sino null
+    let dormitorios = datos.dormitorios ?? null;
+    let banios = datos.banios ?? null;
+
+    // Un terreno no tiene estos datos
     if (datos.tipo === TipoPropiedad.TERRENO) {
-
-      datos.superficieCubiertaM2 = null;
-      datos.ambientes = null;
-      datos.dormitorios = null;
-      datos.banios = null;
+      superficieCubiertaM2 = null;
+      ambientes = null;
+      dormitorios = null;
+      banios = null;
     }
 
-
-    //ESTADO INICIAL
-    // Toda propiedad nueva empieza como BORRADOR.
-    datos.estado = EstadoPropiedad.BORRADOR;
-
-    //GUARDAMOS LA PROPIEDAD
-    return propiedadRepository.crear(datos);
+    return propiedadRepository.crear({
+      titulo: datos.titulo,
+      descripcion: datos.descripcion,
+      tipo: datos.tipo,
+      operacion: datos.operacion,
+      // En el DTO es number, pero en la Entity es string
+      precio: String(datos.precio),
+      moneda: datos.moneda,
+      direccion: datos.direccion,
+      zona: datos.zona,
+      superficieCubiertaM2,
+      // En el DTO es number, pero en la Entity es string
+      superficieTotalM2: String(datos.superficieTotalM2),
+      ambientes,
+      dormitorios,
+      banios,
+      antiguedadAnios: datos.antiguedadAnios ?? null,
+      tags: datos.tags ?? [],
+      // Toda propiedad nueva empieza como borrador.
+      estado: EstadoPropiedad.BORRADOR,
+      inmobiliaria,
+    });
   }
 
 
-  //ACTUALIZAR DATOS DE UNA PROPIEDAD
-  async actualizar(id: number, datos: Partial<Propiedad>): Promise<Propiedad> {
+  // ACTUALIZAR DATOS DE UNA PROPIEDAD
+  async actualizar(id: number, datos: ActualizarPropiedadDto): Promise<Propiedad> {
 
-    //comprobamos que exista.
     const propiedad = await this.buscarPorId(id);
 
-    // REGLA: VENDIDA, ALQUILADA o CANCELADA no se pueden editar.
+    // Una propiedad finalizada no se puede modificar
     if (
       propiedad.estado === EstadoPropiedad.VENDIDA ||
       propiedad.estado === EstadoPropiedad.ALQUILADA ||
       propiedad.estado === EstadoPropiedad.CANCELADA
     ) {
-      throw new Error(
-        "No se puede editar una propiedad finalizada"
-      );
+      throw new Error("No se puede modificar una propiedad finalizada");
     }
 
-    // REGLA: si tiene una visita CONFIRMADA tampoco se puede editar.
+    // Buscamos las solicitudes de visita de la propiedad
     const solicitudes = await solicitudVisitaRepository.buscarPorPropiedad(id);
 
-    // .some() pregunta: Existe AL MENOS UNA solicitud CONFIRMADA?
-    const tieneVisitaConfirmada = solicitudes.some(
-      (solicitud) => solicitud.estado === EstadoSolicitudVisita.CONFIRMADA
+    // Revisamos si tiene alguna visita confirmada.
+    const tieneVisitaConfirmada = solicitudes.some( //.some: si tiene al menos una
+      (solicitud) =>
+        solicitud.estado === EstadoSolicitudVisita.CONFIRMADA
     );
 
     if (tieneVisitaConfirmada) {
       throw new Error(
-        "No se puede editar una propiedad con una visita confirmada"
+        "No se puede modificar una propiedad con visitas confirmadas"
       );
     }
 
-
-    //VALIDAR PRECIO SI LO ESTAN MODIFICANDO
+    // Si mandaron un nuevo precio, debe ser mayor a 0
     if (
-      datos.precio !== undefined && //si hay un valor
-      Number(datos.precio) <= 0 //y ese valor es menor o igual a 0
+      datos.precio !== undefined &&
+      datos.precio <= 0
     ) {
-      throw new Error( //da error
-        "El precio de la propiedad debe ser mayor a 0"
-      );
+      throw new Error("El precio debe ser mayor a 0");
     }
 
-
-    //VALIDAR SUPERFICIE TOTAL SI LA MODIFICAN
+    // Si mandaron superficie total, debe ser mayor a 0
     if (
-      datos.superficieTotalM2 !== undefined && //si hay un valor
-      Number(datos.superficieTotalM2) <= 0 // y es menor o igual a 0
+      datos.superficieTotalM2 !== undefined &&
+      datos.superficieTotalM2 <= 0
     ) {
-      throw new Error( //da error
-        "La superficie total debe ser mayor a 0"
-      );
+      throw new Error("La superficie total debe ser mayor a 0");
     }
 
-
-    //VALIDAR SUPERFICIE CUBIERTA SI LA MODIFICAN
+    // Si mandaron superficie cubierta y no es null,
+    // debe ser mayor a 0
     if (
-      datos.superficieCubiertaM2 !== undefined && //si hay un valor
-      datos.superficieCubiertaM2 !== null && //y no es null
-      Number(datos.superficieCubiertaM2) <= 0 //y es menor o igual a 0
+      datos.superficieCubiertaM2 !== undefined &&
+      datos.superficieCubiertaM2 !== null &&
+      datos.superficieCubiertaM2 <= 0
     ) {
-      throw new Error( //da error
-        "La superficie cubierta debe ser mayor a 0"
-      );
+      throw new Error("La superficie cubierta debe ser mayor a 0");
     }
 
+    // Si no mandaron un nuevo tipo, usamos el que ya tenía
+    const tipoFinal = datos.tipo ?? propiedad.tipo;
 
-    //CONTROLAR SI VA A QUEDAR COMO TERRENO
-    // Puede pasar que ya fuera TERRENO,
-    // o que ahora estén cambiando el tipo a TERRENO.
+    // Separamos estos campos porque en el DTO son number
+    // y en la Entity son string
+    const { //sacamos de "datos" los 3 campos que tenemos que cambiar
+      precio,
+      superficieTotalM2,
+      superficieCubiertaM2,
+      ...otrosDatos //los demas campos de "datos" se guardan juntos dentro de la variable "otrosDatos"
+    } = datos;
 
-    const tipoFinal = datos.tipo ?? propiedad.tipo; //mandaron un tipo nuevo? SI: uso datos.tipo/ NO: uso propiedad.tipo
+    //copiamos todos los datos que quedaron en otrosDatos
+    const datosActualizados: Partial<Propiedad> = {
+      ...otrosDatos,
+    };
 
+    // Convertimos el precio a string si fue enviado
+    if (precio !== undefined) {
+      datosActualizados.precio = String(precio);
+    }
+
+    // Convertimos la superficie total a string si fue enviada
+    if (superficieTotalM2 !== undefined) {
+      datosActualizados.superficieTotalM2 =
+        String(superficieTotalM2);
+    }
+
+    // Si es null queda null
+    // Si es un número, lo convertimos a string
+    if (superficieCubiertaM2 !== undefined) {
+      datosActualizados.superficieCubiertaM2 =
+        superficieCubiertaM2 === null
+          ? null
+          : String(superficieCubiertaM2);
+    }
+
+    // Si la propiedad queda siendo un terreno
+    // estos campos no corresponden
     if (tipoFinal === TipoPropiedad.TERRENO) {
-
-      // Estos datos no aplican para terrenos.
-      datos.superficieCubiertaM2 = null;
-      datos.ambientes = null;
-      datos.dormitorios = null;
-      datos.banios = null;
+      datosActualizados.superficieCubiertaM2 = null;
+      datosActualizados.ambientes = null;
+      datosActualizados.dormitorios = null;
+      datosActualizados.banios = null;
     }
 
-
-    // Copiamos los nuevos datos sobre la propiedad existente.
-    Object.assign(propiedad, datos);
-
-    // Guardamos los cambios.
+    // Aplicamos los cambios sobre la propiedad existente
+    //agarra propiedad y reemplazale los cambios que aparecen em datosActualizados
+    Object.assign(propiedad, datosActualizados); 
     return propiedadRepository.actualizar(propiedad);
   }
 
 
+  // CAMBIAR ESTADO DE UNA PROPIEDAD
+  async cambiarEstado(
+    id: number,
+    nuevoEstado: EstadoPropiedad
+  ): Promise<Propiedad> {
 
-  //CAMBIAR ESTADO DE UNA PROPIEDAD
-  async cambiarEstado(id: number, nuevoEstado: EstadoPropiedad): Promise<Propiedad> {
-
-    // Buscamos la propiedad.
     const propiedad = await this.buscarPorId(id);
 
-    // Guardamos el estado anterior porque después lo necesitamos para crear el historial.
     const estadoAnterior = propiedad.estado;
 
-
-    //EVITAR CAMBIO AL MISMO ESTADO
     if (estadoAnterior === nuevoEstado) {
-      throw new Error(
-        "La propiedad ya se encuentra en ese estado"
-      );
+      throw new Error("La propiedad ya se encuentra en ese estado");
     }
 
-
-    //VALIDAR CAMBIO DE ESTADO
-    // Creamos una lista con los estados permitidos según el estado actual.
+    // Acá guardamos los estados a los que puede pasar.
     let estadosPermitidos: EstadoPropiedad[] = [];
 
-    // Si está en BORRADOR:
-    // BORRADOR a PUBLICADA
-    // BORRADOR a CANCELADA
     if (estadoAnterior === EstadoPropiedad.BORRADOR) {
-
       estadosPermitidos = [
         EstadoPropiedad.PUBLICADA,
         EstadoPropiedad.CANCELADA,
       ];
     }
 
-    // Si está PUBLICADA:
-    // PUBLICADA a PAUSADA
-    // PUBLICADA a RESERVADA
-    // PUBLICADA a CANCELADA
     else if (estadoAnterior === EstadoPropiedad.PUBLICADA) {
-
       estadosPermitidos = [
         EstadoPropiedad.PAUSADA,
         EstadoPropiedad.RESERVADA,
@@ -237,36 +246,25 @@ class PropiedadService {
       ];
     }
 
-
-    // Si está PAUSADA:
-    // PAUSADA a PUBLICADA
-    // PAUSADA a CANCELADA
     else if (estadoAnterior === EstadoPropiedad.PAUSADA) {
-
       estadosPermitidos = [
         EstadoPropiedad.PUBLICADA,
         EstadoPropiedad.CANCELADA,
       ];
     }
 
-
-    // Si está RESERVADA tenemos que mirar qué tipo de operación tiene la propiedad.
     else if (estadoAnterior === EstadoPropiedad.RESERVADA) {
 
-      // Si la propiedad es para VENTA, puede terminar como VENDIDA.
+      // Si era para venta puede pasar a vendida.
       if (propiedad.operacion === TipoOperacion.VENTA) {
-
         estadosPermitidos = [
           EstadoPropiedad.VENDIDA,
           EstadoPropiedad.CANCELADA,
         ];
       }
 
-      // Si la propiedad es para ALQUILER, puede terminar como ALQUILADA.
-      else if (
-        propiedad.operacion === TipoOperacion.ALQUILER
-      ) {
-
+      // Si era para alquiler puede pasar a alquilada.
+      else if (propiedad.operacion === TipoOperacion.ALQUILER) {
         estadosPermitidos = [
           EstadoPropiedad.ALQUILADA,
           EstadoPropiedad.CANCELADA,
@@ -274,98 +272,96 @@ class PropiedadService {
       }
     }
 
-
-    // Si está VENDIDA, ALQUILADA o CANCELADA, no agregamos ningún estado permitido
-    // Entonces estadosPermitidos queda []
-
-
-    //COMPROBAMOS SI EL NUEV0 ESTADO ESTA PERMITIDO
-    // includes() pregunta: nuevoEstado está dentro de estadosPermitidos?
+    // Controlamos que el cambio de estado esté permitido.
     if (!estadosPermitidos.includes(nuevoEstado)) {
-      throw new Error( //Si no esta da error
-        "Cambio de estado de propiedad no permitido"
+      throw new Error(
+        `No se puede cambiar de ${estadoAnterior} a ${nuevoEstado}`
       );
     }
 
+    // Si queremos publicar la propiedad,
+    // comprobamos que la galería esté lista.
+    if (nuevoEstado === EstadoPropiedad.PUBLICADA) {
 
-    //CAMBIAMOS EL ESTADO
+    // Buscamos todas las fotos de esta propiedad.
+    const fotos =
+        await fotoPropiedadRepository.buscarPorPropiedad(id);
+
+    // REGLA: una propiedad publicada tiene que tener al menos una foto.
+    if (fotos.length === 0) {
+        throw new Error(
+        "La propiedad debe tener al menos una foto para ser publicada"
+        );
+    }
+
+    // Buscamos las fotos marcadas como portada.
+    const portadas = fotos.filter( //filter() recorre y se queda con esPortada === true
+        (foto) => foto.esPortada
+    );
+
+    // REGLA: tiene que existir una sola portada.
+    if (portadas.length !== 1) {
+        throw new Error(
+        "La propiedad debe tener exactamente una foto de portada"
+        );
+    }
+    }
+
     propiedad.estado = nuevoEstado;
 
-    // Guardamos el nuevo estado en la BD.
     const propiedadActualizada =
       await propiedadRepository.actualizar(propiedad);
 
-
-    //GUARDAR EL CAMBIO EN EL HISTORIAL
-    await historialEstadoPropiedadService.crear({
-
-      // Estado que tenía antes.
-      estadoAnterior: estadoAnterior,
-
-      // Estado al que acaba de cambiar.
+    // Guardamos el cambio en el historial.
+    await historialEstadoPropiedadRepository.crear({
+      propiedad,
+      estadoAnterior,
       estadoNuevo: nuevoEstado,
-
-      // Propiedad a la que pertenece este cambio.
-      propiedad: propiedadActualizada,
     });
 
-
-    //CREAR ACTIVIDAD
+    // Registramos el cambio como actividad.
     await actividadService.crear({
-
       tipo: TipoActividad.CAMBIO_ESTADO_PROPIEDAD,
-
       descripcion:
-        `La propiedad "${propiedad.titulo}" cambió de ` +
-        `${estadoAnterior} a ${nuevoEstado}`,
-
-      leida: false,
-
+        `La propiedad "${propiedad.titulo}" cambió de ${estadoAnterior} a ${nuevoEstado}`,
       inmobiliaria: propiedad.inmobiliaria,
     });
 
-
-    //devolvemos la propiedad con su nuevo estado.
     return propiedadActualizada;
   }
 
 
-  //ELIMINAR UNA PROPIEDAD
+  // Elimina una propiedad.
   async eliminar(id: number): Promise<void> {
 
-    // Comprobamos que exista.
     const propiedad = await this.buscarPorId(id);
 
-    // REGLA: si tiene una visita CONFIRMADA no se puede eliminar.
-    const solicitudes = await solicitudVisitaRepository.buscarPorPropiedad(id);
+    const solicitudes =
+      await solicitudVisitaRepository.buscarPorPropiedad(id);
 
-    const tieneVisitaConfirmada = solicitudes.some( 
+    const tieneVisitaConfirmada = solicitudes.some(
       (solicitud) =>
         solicitud.estado === EstadoSolicitudVisita.CONFIRMADA
     );
 
+    // No se puede eliminar si tiene una visita confirmada.
     if (tieneVisitaConfirmada) {
       throw new Error(
-        "No se puede eliminar una propiedad con una visita confirmada"
+        "No se puede eliminar una propiedad con visitas confirmadas"
       );
     }
 
-    // REGLA: una propiedad finalizada no se elimina
+    // Tampoco se eliminan propiedades que ya finalizaron.
     if (
       propiedad.estado === EstadoPropiedad.VENDIDA ||
       propiedad.estado === EstadoPropiedad.ALQUILADA ||
       propiedad.estado === EstadoPropiedad.CANCELADA
     ) {
-      throw new Error(
-        "No se puede eliminar una propiedad finalizada"
-      );
+      throw new Error("No se puede eliminar una propiedad finalizada");
     }
 
-    // Si pasó todos los controles, la eliminamos.
     await propiedadRepository.eliminar(id);
   }
 }
 
-
-// Creamos una instancia
 export const propiedadService = new PropiedadService();

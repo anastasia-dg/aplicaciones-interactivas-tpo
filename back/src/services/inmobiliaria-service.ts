@@ -4,6 +4,13 @@ import { Inmobiliaria } from "../entities/inmobiliaria.entity";
 // Necesitamos EstadoPropiedad para saber
 // qué estados impiden eliminar una inmobiliaria.
 import { EstadoPropiedad } from "../entities/enums";
+import { vendedorService } from "./vendedor-service"; //para buscar el vendedor usando vendedorId
+
+//tipo de datos para crear y actualizar
+import {
+  CrearInmobiliariaDto,
+  ActualizarInmobiliariaDto,
+} from "../dtos/inmobiliaria-dto"; 
 
 
 class InmobiliariaService {
@@ -31,48 +38,63 @@ class InmobiliariaService {
   }
 
 
-  //CREAR INMOBILIARIA
-  async crear( datos: Partial<Inmobiliaria> ): Promise<Inmobiliaria> {
+// CREAR INMOBILIARIA
+  async crear(datos: CrearInmobiliariaDto): Promise<Inmobiliaria> {
 
-    // REGLA 1: El nombre de fantasía de la inmobiliaria debe ser único.
-    if (datos.nombre) {
+    // REGLA 1: El nombre de fantasía de la inmobiliaria debe ser único
+    const inmobiliariaConMismoNombre =
+        await inmobiliariaRepository.buscarPorNombre(datos.nombre);
 
-      // Buscamos si ya existe una inmobiliaria
-      // con ese mismo nombre.
-      const inmobiliariaConMismoNombre = await inmobiliariaRepository.buscarPorNombre(datos.nombre);
-
-      // Si encontramos una, no permitimos crear otra.
-      if (inmobiliariaConMismoNombre) {
+    if (inmobiliariaConMismoNombre) {
         throw new Error(
-          "Ya existe una inmobiliaria con ese nombre"
+        "Ya existe una inmobiliaria con ese nombre"
         );
-      }
     }
 
-    // REGLA 2: Un vendedor puede tener como máximo una inmobiliaria.
-    if (datos.vendedor) {
 
-      // Buscamos si ese vendedor ya tiene
-      // una inmobiliaria asociada.
-      const inmobiliariaDelVendedor = await inmobiliariaRepository.buscarPorVendedor(datos.vendedor.id); //hay una inmobiliaria con un vendedor con este id?
+    // REGLA 2: Buscamos al vendedor usando el vendedorId que llegó desde el DTO
+    // vendedorService.buscarPorId() ya lanza un error si el vendedor no existe.
+    const vendedor =
+        await vendedorService.buscarPorId(datos.vendedorId);
 
-      // Si encontramos una, significa que el vendedor
-      // ya tiene una inmobiliaria.
-      if (inmobiliariaDelVendedor) {
+
+    // REGLA 3: Un vendedor puede tener como máximo una inmobiliaria
+    const inmobiliariaDelVendedor =
+        await inmobiliariaRepository.buscarPorVendedor(vendedor.id);
+
+    if (inmobiliariaDelVendedor) {
         throw new Error(
-          "El vendedor ya tiene una inmobiliaria"
+        "El vendedor ya tiene una inmobiliaria"
         );
-      }
     }
 
-    // Si pasó todas las reglas anteriores,
-    // recién ahora permitimos guardarla.
-    return inmobiliariaRepository.crear(datos);
-  }
+
+    // Si pasó todas las validaciones, creamos la inmobiliaria
+    //
+    // El DTO trae "vendedorId", pero la Entity necesita "vendedor".
+    return inmobiliariaRepository.crear({
+
+        nombre: datos.nombre,
+
+        descripcion: datos.descripcion,
+
+        urlLogo: datos.urlLogo ?? null,
+
+        telefonoContacto: datos.telefonoContacto,
+
+        emailContacto: datos.emailContacto,
+
+        direccionOficina:
+        datos.direccionOficina ?? null,
+
+        //ponemos el objeto Vendedor que buscamos anteriormente
+        vendedor: vendedor,
+    });
+    }
 
 
   //ACTUALIZAR INMOBILIARIA
-  async actualizar(id: number, datos: Partial<Inmobiliaria>): Promise<Inmobiliaria> {
+  async actualizar(id: number, datos: ActualizarInmobiliariaDto): Promise<Inmobiliaria> {
 
     //comprobamos que la inmobiliaria exista
     //buscarPorId() ya lanza un error cuando no existe

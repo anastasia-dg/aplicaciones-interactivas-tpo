@@ -153,15 +153,14 @@ export const crearPropiedadSchema = z.object({
     .positive("El ID de la inmobiliaria debe ser mayor a 0"),
 });
 
-// DTO PARA ACTUALIZAR UNA PROPIEDAD
 
-// Para actualizar una propiedad hacemos todos
-// los campos opcionales.
-//
-// Esto permite modificar solamente los datos
-// que el usuario quiere cambiar.
-export const actualizarPropiedadSchema =
-  crearPropiedadSchema.partial();
+// DTO PARA ACTUALIZAR UNA PROPIEDAD
+// hacemos todos los campos opcionales EXCEPTO InmobiliariaId (para eso usamos .omit())
+// asi no se puede actualizar la inmobiliaria a la que pertenece la propiedad
+export const actualizarPropiedadSchema = 
+  crearPropiedadSchema
+    .omit({ inmobiliariaId: true })
+    .partial();
 
 // TypeScript obtiene automáticamente
 // el tipo a partir del schema de Zod.

@@ -3,6 +3,7 @@ import { inmobiliariaRepository } from "../repositories/inmobiliaria.repository"
 import { actividadService } from "./actividad-service";
 import { Reseña } from "../entities/reseña.entity";
 import { TipoActividad } from "../entities/enums";
+import { CrearReseñaDto } from "../dtos/resena-dto";
 
 
 class ResenaService {
@@ -35,7 +36,7 @@ class ResenaService {
 
 
   // CREAR UNA RESEÑA
-  async crear(inmobiliariaId: number, datos: Partial<Reseña>): Promise<Reseña> {
+  async crear(inmobiliariaId: number, datos: CrearReseñaDto): Promise<Reseña> {
 
     // Comprobamos que la inmobiliaria exista
     const inmobiliaria = await inmobiliariaRepository.buscarPorId(inmobiliariaId);
@@ -62,11 +63,12 @@ class ResenaService {
 
     // Crear la reseña
     const reseña = await reseñaRepository.crear({
-
-      // ...datos copia todos los datos recibidos
-      ...datos,
-    //tambien agregamos la inmobiliaria que buscamos y comprobamos que existe
-      inmobiliaria: inmobiliaria,
+        // Guardamos los datos que ya fueron validados por el DTO
+        nombreAutor: datos.nombreAutor,
+        contenido: datos.contenido,
+        calificacion: datos.calificacion,
+        // Relacionamos la reseña con la inmobiliaria ue buscamos y comprobamos que existe.
+        inmobiliaria: inmobiliaria,
     });
 
 

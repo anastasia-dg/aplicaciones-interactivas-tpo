@@ -15,9 +15,9 @@ fotoPropiedadRouter.get(
   fotoPropiedadController.buscarPorPropiedad
 );
 
-// POST /fotos-propiedad
+// POST /fotos-propiedad/propiedad/:propiedadId
 fotoPropiedadRouter.post(
-  "/",
+  "/propiedad/:propiedadId",
   fotoPropiedadController.crear
 );
 

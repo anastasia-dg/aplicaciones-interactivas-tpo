@@ -6,8 +6,7 @@ export const crearVendedorSchema = z.object({
 
 //DTO PARA CREAR UN VENDEDOR
 
-  // nombreCompleto tiene que ser un texto.
-  //
+  // nombreCompleto tiene que ser un texto
   // .min(1) significa que no puede estar vacío.
   // .max(120) porque nuestra Entity permite como máximo 120 caracteres.
   nombreCompleto: z
@@ -17,18 +16,20 @@ export const crearVendedorSchema = z.object({
 
 
   // El email también tiene que ser texto.
-  //
   // .email() comprueba que tenga formato de email.
   email: z
     .string()
     .email("El email no es válido")
     .max(255, "El email no puede superar los 255 caracteres"),
 
-//el usuario no manda contrasenaHash, manda normal, despues se hace Hash
-  contrasenaHash: z
-    .string()
-    .min(1, "La contraseña es obligatoria")
-    .max(255, "La contraseña no puede superar los 255 caracteres"),
+
+  // El usuario manda su contraseña normal.
+// Después el Service se va a encargar de convertirla en un hash
+// antes de guardarla en la base de datos.
+contrasena: z
+  .string()
+  .min(1, "La contraseña es obligatoria")
+  .max(255, "La contraseña no puede superar los 255 caracteres"),
 
 
   // El teléfono es opcional.
@@ -49,7 +50,7 @@ export const actualizarVendedorSchema =
   crearVendedorSchema.partial();
 
 
-  
+
 // TIPOS DE TYPESCRIPT
 
 //Z.infer le dice a typeScript mira CrearVendedorSchema y creame automaticamente un tipo a partir de el (deduci el tipo de dato que acepta)

@@ -1,85 +1,67 @@
 import { Request, Response } from "express";
-
 import {
   crearPropiedadSchema,
   actualizarPropiedadSchema,
 } from "../dtos/propiedad-dto";
-
 import { propiedadService } from "../services/propiedad-service";
+import { EstadoPropiedad } from "../entities/enums";
 
-import {
-  EstadoPropiedad,
-} from "../entities/enums";
-import { Inmobiliaria } from "../entities/inmobiliaria.entity";
-
-// CONTROLLER DE PROPIEDAD
 
 class PropiedadController {
 
-  // LISTAR TODAS LAS PROPIEDADES
-
+  // Devuelve todas las propiedades.
   async listar(_request: Request, response: Response) {
 
     try {
 
-      // Le pedimos al service todas las propiedades.
+      // Le pedimos al Service todas las propiedades.
       const propiedades = await propiedadService.listar();
 
-      // Devolvemos las propiedades encontradas.
-      response.status(200).json(propiedades);
+      return response.status(200).json(propiedades);
 
     } catch (error) {
 
       console.error(error);
 
-      response.status(500).json({
+      return response.status(500).json({
         mensaje: "Error al obtener las propiedades",
       });
     }
   }
 
-  // BUSCAR UNA PROPIEDAD POR ID
 
+  // Busca una propiedad por su ID.
   async buscarPorId(request: Request, response: Response) {
 
     try {
 
-      // Los parámetros de Express siempre llegan como string.
-      //
-      // Por eso convertimos el id a número.
+      // Los parámetros de Express llegan como string,
+      // por eso convertimos el ID a number.
       const id = Number(request.params.id);
 
-
-      // Comprobamos que realmente sea un número.
+      // Si no se pudo convertir correctamente, devolvemos 400.
       if (isNaN(id)) {
-
         return response.status(400).json({
           mensaje: "El ID de la propiedad no es válido",
         });
       }
 
-
-      // Buscamos la propiedad utilizando el service.
+      // Le pedimos al Service que busque la propiedad.
       const propiedad = await propiedadService.buscarPorId(id);
 
-
-      // Devolvemos la propiedad encontrada.
       return response.status(200).json(propiedad);
 
     } catch (error) {
 
-      // Si el service dice que no existe,
-      // devolvemos 404.
+      // Si el Service no encontró la propiedad, devolvemos 404.
       if (
         error instanceof Error &&
         error.message === "Propiedad no encontrada"
       ) {
-
         return response.status(404).json({
           mensaje: error.message,
         });
       }
-
 
       console.error(error);
 
@@ -89,94 +71,32 @@ class PropiedadController {
     }
   }
 
-  // CREAR UNA PROPIEDAD
 
+  // Crea una propiedad.
   async crear(request: Request, response: Response) {
 
     try {
 
-      // Validamos todos los datos recibidos
-      // utilizando el DTO.
+      // Validamos el body usando el DTO de creación.
       const resultado = crearPropiedadSchema.safeParse(
         request.body
       );
 
-
-      // Si los datos no cumplen el schema,
-      // devolvemos error 400.
+      // Si los datos no cumplen con el DTO,
+      // devolvemos un error 400.
       if (!resultado.success) {
-
         return response.status(400).json({
           mensaje: "Los datos de la propiedad no son válidos",
           errores: resultado.error.issues,
         });
       }
 
-
-      // resultado.data contiene los datos
-      // ya validados por Zod.
+      // Acá tenemos los datos ya validados por Zod.
       const datos = resultado.data;
 
+      // Mandamos directamente los datos al Service.
+      const propiedad = await propiedadService.crear(datos);
 
-      // IMPORTANTE:
-      //
-      // El DTO recibe:
-      //
-      // inmobiliariaId: 1
-      //
-      // Pero la Entity necesita:
-      //
-      // inmobiliaria: { id: 1 }
-      //
-      // Por eso hacemos la transformación acá.
-      const propiedad = await propiedadService.crear({
-
-        titulo: datos.titulo,
-
-        descripcion: datos.descripcion,
-
-        tipo: datos.tipo,
-
-        operacion: datos.operacion,
-
-        precio: String(datos.precio),
-
-        moneda: datos.moneda,
-
-        direccion: datos.direccion,
-
-        zona: datos.zona,
-
-        superficieCubiertaM2: 
-          datos.superficieCubiertaM2 != null 
-          ? String(datos.superficieCubiertaM2) 
-          : null,
-
-        superficieTotalM2:
-          String(datos.superficieTotalM2),
-
-        ambientes:
-          datos.ambientes ?? null,
-
-        dormitorios:
-          datos.dormitorios ?? null,
-
-        banios:
-          datos.banios ?? null,
-
-        antiguedadAnios:
-          datos.antiguedadAnios ?? null,
-
-        tags:
-          datos.tags ?? [],
-
-        inmobiliaria: {
-          id: datos.inmobiliariaId,
-        } as Inmobiliaria
-      });
-
-
-      // La propiedad fue creada correctamente.
       return response.status(201).json(propiedad);
 
     } catch (error) {
@@ -189,142 +109,72 @@ class PropiedadController {
     }
   }
 
-  // ACTUALIZAR UNA PROPIEDAD
 
+  // Actualiza una propiedad.
   async actualizar(request: Request, response: Response) {
 
     try {
 
-      // Convertimos el ID de string a number.
+      // Convertimos el ID que viene en la URL a number.
       const id = Number(request.params.id);
 
-
-      // Validamos el ID.
       if (isNaN(id)) {
-
         return response.status(400).json({
           mensaje: "El ID de la propiedad no es válido",
         });
       }
 
+      // Validamos el body con el DTO de actualización.
+      const resultado = actualizarPropiedadSchema.safeParse(
+        request.body
+      );
 
-      // Validamos el body utilizando
-      // el schema de actualización.
-      const resultado =
-        actualizarPropiedadSchema.safeParse(
-          request.body
-        );
-
-
-      // Si el body no es válido,
-      // devolvemos 400.
       if (!resultado.success) {
-
         return response.status(400).json({
           mensaje: "Los datos de actualización no son válidos",
           errores: resultado.error.issues,
         });
       }
 
-
+      // Datos ya validados.
       const datos = resultado.data;
 
+      // Mandamos los datos al Service.
+      const propiedad = await propiedadService.actualizar(
+        id,
+        datos
+      );
 
-      // Creamos un objeto con los datos
-      // que realmente necesita la Entity.
-      //
-      // No mandamos inmobiliariaId directamente
-      // porque no existe como atributo de Propiedad.
-      const datosActualizacion: any = {
-
-        ...datos,
-
-      };
-
-
-      // Si mandaron inmobiliariaId,
-      // lo transformamos a la relación inmobiliaria.
-      if (datos.inmobiliariaId !== undefined) {
-
-        datosActualizacion.inmobiliaria = {
-          id: datos.inmobiliariaId,
-        };
-
-        // Eliminamos inmobiliariaId porque
-        // no pertenece a la Entity.
-        delete datosActualizacion.inmobiliariaId;
-      }
-
-
-      // TypeORM guarda los DECIMAL como string.
-      //
-      // Convertimos los números del DTO.
-      if (datos.precio !== undefined) {
-
-        datosActualizacion.precio =
-          String(datos.precio);
-      }
-
-
-      if (datos.superficieTotalM2 !== undefined) {
-
-        datosActualizacion.superficieTotalM2 =
-          String(datos.superficieTotalM2);
-      }
-
-
-      if (datos.superficieCubiertaM2 !== undefined) {
-
-        datosActualizacion.superficieCubiertaM2 =
-          datos.superficieCubiertaM2 === null
-            ? null
-            : String(datos.superficieCubiertaM2);
-      }
-
-
-      // Llamamos al service para realizar
-      // la actualización.
-      const propiedad =
-        await propiedadService.actualizar(
-          id,
-          datosActualizacion
-        );
-
-
-      // Devolvemos la propiedad modificada.
       return response.status(200).json(propiedad);
 
     } catch (error) {
 
-      // Propiedad inexistente.
+      // La propiedad no existe.
       if (
         error instanceof Error &&
         error.message === "Propiedad no encontrada"
       ) {
-
         return response.status(404).json({
           mensaje: error.message,
         });
       }
 
-
-      // Propiedad finalizada.
+      // Estas son reglas de negocio que pueden impedir
+      // que la propiedad sea modificada.
       if (
         error instanceof Error &&
         (
           error.message ===
-            "No se puede editar una propiedad finalizada" ||
+            "No se puede modificar una propiedad finalizada" ||
 
           error.message ===
-            "No se puede editar una propiedad con una visita confirmada"
+            "No se puede modificar una propiedad con visitas confirmadas"
         )
       ) {
-
         return response.status(409).json({
           mensaje: error.message,
         });
       }
-
 
       console.error(error);
 
@@ -334,52 +184,43 @@ class PropiedadController {
     }
   }
 
-  // CAMBIAR ESTADO DE UNA PROPIEDAD
 
+  // Cambia el estado de una propiedad.
   async cambiarEstado(request: Request, response: Response) {
 
     try {
 
-      // Convertimos el ID.
       const id = Number(request.params.id);
 
-
-      // Validamos el ID.
       if (isNaN(id)) {
-
         return response.status(400).json({
           mensaje: "El ID de la propiedad no es válido",
         });
       }
 
-
-      // El estado nuevo llega desde el body.
+      // Sacamos el nuevo estado del body.
       const { estado } = request.body;
 
-
-      // Comprobamos que el estado exista.
+      // Verificamos que sea uno de los estados
+      // que existen en EstadoPropiedad.
       if (
-        !Object.values(EstadoPropiedad).includes(
-          estado
-        )
+        !Object.values(EstadoPropiedad).includes(estado)
       ) {
-
         return response.status(400).json({
           mensaje: "El estado de la propiedad no es válido",
         });
       }
 
-
-      // El service se encarga de comprobar
-      // si el cambio de estado está permitido.
+      // El Controller solamente valida que el estado exista.
+      //
+      // El Service decide si realmente está permitido
+      // pasar del estado actual al nuevo estado.
       const propiedad =
         await propiedadService.cambiarEstado(
           id,
           estado
         );
 
-
-      // Devolvemos la propiedad actualizada.
       return response.status(200).json(propiedad);
 
     } catch (error) {
@@ -388,29 +229,28 @@ class PropiedadController {
         error instanceof Error &&
         error.message === "Propiedad no encontrada"
       ) {
-
         return response.status(404).json({
           mensaje: error.message,
         });
       }
 
-
+      // Si el cambio de estado no está permitido,
+      // devolvemos conflicto.
       if (
         error instanceof Error &&
         (
           error.message ===
             "La propiedad ya se encuentra en ese estado" ||
 
-          error.message ===
-            "Cambio de estado de propiedad no permitido"
+          error.message.startsWith(
+            "No se puede cambiar de"
+          )
         )
       ) {
-
         return response.status(409).json({
           mensaje: error.message,
         });
       }
-
 
       console.error(error);
 
@@ -420,66 +260,54 @@ class PropiedadController {
     }
   }
 
-  // ELIMINAR UNA PROPIEDAD
 
+  // Elimina una propiedad.
   async eliminar(request: Request, response: Response) {
 
     try {
 
-      // Convertimos el ID.
       const id = Number(request.params.id);
 
-
-      // Validamos el ID.
       if (isNaN(id)) {
-
         return response.status(400).json({
           mensaje: "El ID de la propiedad no es válido",
         });
       }
 
-
-      // Le pedimos al service que elimine
-      // la propiedad.
+      // El Service controla si realmente
+      // se puede eliminar la propiedad.
       await propiedadService.eliminar(id);
 
-
-      // 204 significa que se realizó correctamente
-      // pero no hay contenido para devolver.
+      // 204 significa que salió bien,
+      // pero no tenemos contenido para devolver.
       return response.status(204).send();
 
     } catch (error) {
 
-      // La propiedad no existe.
       if (
         error instanceof Error &&
         error.message === "Propiedad no encontrada"
       ) {
-
         return response.status(404).json({
           mensaje: error.message,
         });
       }
 
-
-      // No se puede eliminar por las reglas
-      // de negocio del service.
+      // Reglas de negocio que pueden impedir eliminarla.
       if (
         error instanceof Error &&
         (
           error.message ===
-            "No se puede eliminar una propiedad con una visita confirmada" ||
+            "No se puede eliminar una propiedad con visitas confirmadas" ||
 
           error.message ===
             "No se puede eliminar una propiedad finalizada"
         )
       ) {
-
         return response.status(409).json({
           mensaje: error.message,
         });
       }
-
 
       console.error(error);
 
@@ -491,8 +319,6 @@ class PropiedadController {
 }
 
 
-// Creamos una única instancia del controller.
-//
-// Después la vamos a utilizar desde las rutas.
+// Creamos una sola instancia para usarla desde las rutas.
 export const propiedadController =
   new PropiedadController();

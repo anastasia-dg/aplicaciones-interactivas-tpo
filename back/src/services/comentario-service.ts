@@ -3,6 +3,7 @@ import { propiedadRepository } from "../repositories/propiedad.repository";
 import { actividadService } from "./actividad-service";
 import { Comentario } from "../entities/comentario.entity";
 import { TipoActividad } from "../entities/enums";
+import { CrearComentarioDto } from "../dtos/comentario-dto";
 
 
 class ComentarioService {
@@ -34,46 +35,51 @@ class ComentarioService {
   }
 
 
-  //CREAR UN COMENTARIO
-  async crear(propiedadId: number, datos: Partial<Comentario>): Promise<Comentario> {
+  // CREAR UN COMENTARIO
+    async crear(propiedadId: number,datos: CrearComentarioDto ): Promise<Comentario> {
 
-    //Comprobamos que la propiedad exista
-    const propiedad = await propiedadRepository.buscarPorId(propiedadId);
+    // Comprobamos que la propiedad exista.
+    const propiedad =
+        await propiedadRepository.buscarPorId(propiedadId);
 
-    // Si no encontramos la propiedad, da error
+    // Si no encontramos la propiedad, damos error.
     if (!propiedad) {
-      throw new Error("Propiedad no encontrada");
+        throw new Error("Propiedad no encontrada");
     }
 
-    //Creamos el comentario
+    // Creamos el comentario con los datos
+    // que ya fueron validados por el DTO.
+    const comentario = await comentarioRepository.crear({
+        nombreAutor: datos.nombreAutor,
+        pregunta: datos.pregunta,
 
-    // Le agregamos a los datos la propiedad encontrada
-    //asi el comentario queda relacionado con esa propiedad
-    const comentario = await comentarioRepository.crear({...datos, propiedad: propiedad, respuesta: null,
-      });
+        // Cuando se crea un comentario todavía
+        // no tiene una respuesta del vendedor.
+        respuesta: null,
 
-
-    //Creamos la actividad que llega al vendedor
-    await actividadService.crear({
-        // Indicamos qué ocurrió.
-      tipo: TipoActividad.COMENTARIO,
-
-      // Texto que después podemos mostrar en el feed
-      descripcion:
-        `Nuevo comentario en la propiedad "${propiedad.titulo}"`,
-
-      // Una actividad nueva empieza como no leída.
-      leida: false,
-
-      // La notificación pertenece a la inmobiliaria dueña de la propiedad.
-      inmobiliaria: propiedad.inmobiliaria,
+        // Relacionamos el comentario con la propiedad.
+        propiedad: propiedad,
     });
 
+    // Creamos una actividad para avisarle al vendedor
+    // que recibió un nuevo comentario.
+    await actividadService.crear({
+        tipo: TipoActividad.COMENTARIO,
 
-    //devolvemos el comentario creado.
+        descripcion:
+        `Nuevo comentario en la propiedad "${propiedad.titulo}"`,
+
+        // Una actividad nueva empieza como no leída.
+        leida: false,
+
+        // La actividad pertenece a la inmobiliaria
+        // dueña de la propiedad.
+        inmobiliaria: propiedad.inmobiliaria,
+    });
+
+    // Devolvemos el comentario creado.
     return comentario;
-  }
-
+    }
 
   //RESPONDER UN COMENTARIO
   async responder(id: number, respuesta: string): Promise<Comentario> {
