@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 import {
   crearPropiedadSchema,
   actualizarPropiedadSchema,
+  cambiarEstadoPropiedadSchema,
 } from "../dtos/propiedad-dto";
 import { propiedadService } from "../services/propiedad-service";
-import { EstadoPropiedad } from "../entities/enums";
 
 
 class PropiedadController {
@@ -198,27 +198,30 @@ class PropiedadController {
         });
       }
 
-      // Sacamos el nuevo estado del body.
-      const { estado } = request.body;
+      // Sacamos el nuevo estado del body
+      // Validamos el body con el DTO de cambio de estado.
+      const resultado =
+        cambiarEstadoPropiedadSchema.safeParse(request.body);
 
-      // Verificamos que sea uno de los estados
-      // que existen en EstadoPropiedad.
-      if (
-        !Object.values(EstadoPropiedad).includes(estado)
-      ) {
+      // Si el estado no existe dentro de EstadoPropiedad el DTO rechaza los datos
+      if (!resultado.success) {
         return response.status(400).json({
           mensaje: "El estado de la propiedad no es válido",
+          errores: resultado.error.issues,
         });
       }
 
-      // El Controller solamente valida que el estado exista.
+      // Sacamos los datos que Zod ya validó
+      const datos = resultado.data;
+
+      // El Controller solamente valida que el estado exista
       //
       // El Service decide si realmente está permitido
       // pasar del estado actual al nuevo estado.
       const propiedad =
         await propiedadService.cambiarEstado(
           id,
-          estado
+          datos.estado
         );
 
       return response.status(200).json(propiedad);

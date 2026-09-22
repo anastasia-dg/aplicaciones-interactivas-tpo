@@ -3,7 +3,7 @@ import { propiedadRepository } from "../repositories/propiedad.repository";
 import { actividadService } from "./actividad-service";
 import { Comentario } from "../entities/comentario.entity";
 import { TipoActividad } from "../entities/enums";
-import { CrearComentarioDto } from "../dtos/comentario-dto";
+import { CrearComentarioDto, ResponderComentarioDto } from "../dtos/comentario-dto";
 
 
 class ComentarioService {
@@ -81,24 +81,23 @@ class ComentarioService {
     return comentario;
     }
 
-  //RESPONDER UN COMENTARIO
-  async responder(id: number, respuesta: string): Promise<Comentario> {
-    //buscamos el comentario.
+  // RESPONDER UN COMENTARIO
+  async responder(id: number, datos: ResponderComentarioDto): Promise<Comentario> {
+
+    // Buscamos el comentario.
     const comentario = await this.buscarPorId(id);
 
-    // REGLA: un comentario puede tener UNA SOLA respuesta.
-
-    // Si respuesta ya tiene contenido significa que el vendedor ya respondio
+    // REGLA: un comentario puede tener UNA SOLA respuesta
     if (comentario.respuesta) {
       throw new Error(
         "El comentario ya fue respondido"
       );
     }
 
-    // Guardamos la respuesta en el comentario.
-    comentario.respuesta = respuesta;
+    //datos.respuesta ya viene validado por el DTO
+    comentario.respuesta = datos.respuesta;
 
-    // Le pedimos al Repository que guarde el comentario actualizado.
+    // Guardamos el comentario actualizado.
     return comentarioRepository.actualizar(comentario);
   }
 

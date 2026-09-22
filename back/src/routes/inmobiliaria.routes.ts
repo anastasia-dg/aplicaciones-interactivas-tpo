@@ -22,7 +22,7 @@ inmobiliariaRouter.get(
 );
 
 // PUT /inmobiliarias/:id
-inmobiliariaRouter.put(
+inmobiliariaRouter.patch(
   "/:id",
   inmobiliariaController.actualizar
 );

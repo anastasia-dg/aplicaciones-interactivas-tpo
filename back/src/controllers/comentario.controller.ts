@@ -106,13 +106,16 @@ export const comentarioController = {
         });
       }
 
-      const { respuesta } =
+      // Validamos los datos que llegaron en el body.
+      const datos =
         responderComentarioSchema.parse(req.body);
 
+      // Le mandamos al Service los datos ya validados.
       const comentario =
-        await comentarioService.responder(id, respuesta);
+        await comentarioService.responder(id, datos);
 
       res.status(200).json(comentario);
+
     } catch (error) {
       res.status(400).json({
         message: error instanceof Error

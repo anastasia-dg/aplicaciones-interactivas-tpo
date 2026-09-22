@@ -28,7 +28,7 @@ vendedorRouter.get(
 );
 
 // PUT /vendedores/:id
-vendedorRouter.put(
+vendedorRouter.patch(
   "/:id",
   vendedorController.actualizar
 );

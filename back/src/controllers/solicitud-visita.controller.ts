@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import { solicitudVisitaService } from "../services/solicitud-visita-service";
-import { crearSolicitudVisitaSchema } from "../dtos/solicitud-visita-dto";
-import { EstadoSolicitudVisita } from "../entities/enums";
+import {
+  crearSolicitudVisitaSchema,
+  cambiarEstadoSolicitudVisitaSchema,
+} from "../dtos/solicitud-visita-dto";
 
 export const solicitudVisitaController = {
 
@@ -113,18 +115,14 @@ export const solicitudVisitaController = {
         });
       }
 
-      const { estado } = req.body;
-
-      if (!Object.values(EstadoSolicitudVisita).includes(estado)) {
-        return res.status(400).json({
-          message: "Estado de solicitud inválido",
-        });
-      }
+      // Validamos el body con el DTO
+      const datos =
+          cambiarEstadoSolicitudVisitaSchema.parse(req.body);
 
       const solicitud =
         await solicitudVisitaService.cambiarEstado(
           id,
-          estado
+          datos.estado
         );
 
       res.status(200).json(solicitud);

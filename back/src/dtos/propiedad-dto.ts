@@ -5,6 +5,7 @@ import { z } from "zod";
 import {
   TipoPropiedad,
   TipoOperacion,
+  EstadoPropiedad,
 } from "../entities/enums";
 
 
@@ -162,6 +163,17 @@ export const actualizarPropiedadSchema =
     .omit({ inmobiliariaId: true })
     .partial();
 
+
+// DTO PARA CAMBIAR EL ESTADO DE UNA PROPIEDAD
+
+export const cambiarEstadoPropiedadSchema = z.object({
+
+  // El estado solamente puede ser uno de los estados definidos en EstadoPropiedad.
+  estado: z.nativeEnum(EstadoPropiedad),
+});
+
+
+
 // TypeScript obtiene automáticamente
 // el tipo a partir del schema de Zod.
 export type CrearPropiedadDto =
@@ -169,3 +181,7 @@ export type CrearPropiedadDto =
 
 export type ActualizarPropiedadDto =
   z.infer<typeof actualizarPropiedadSchema>;
+
+// Tipo de TypeScript generado a partir del schema
+export type CambiarEstadoPropiedadDto =
+  z.infer<typeof cambiarEstadoPropiedadSchema>;

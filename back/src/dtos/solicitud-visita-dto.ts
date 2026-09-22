@@ -1,4 +1,6 @@
 import { z } from "zod";
+// Importamos también el enum de los estados
+import { EstadoSolicitudVisita } from "../entities/enums";
 
 // DTO PARA CREAR UNA SOLICITUD DE VISITA
 
@@ -30,7 +32,27 @@ export const crearSolicitudVisitaSchema = z.object({
 });
 
 
+
+// DTO PARA CAMBIAR EL ESTADO DE UNA SOLICITUD
+
+export const cambiarEstadoSolicitudVisitaSchema = z.object({
+
+  // El estado solamente puede ser uno de los valores
+  // permitidos por nuestro enum:
+  //
+  // PENDIENTE
+  // CONFIRMADA
+  // REALIZADA
+  // CANCELADA
+  // RECHAZADA
+  estado: z.nativeEnum(EstadoSolicitudVisita),
+});
+
+
 // TIPO DE TYPESCRIPT
 
 export type CrearSolicitudVisitaDto =
   z.infer<typeof crearSolicitudVisitaSchema>;
+
+export type CambiarEstadoSolicitudVisitaDto =
+  z.infer<typeof cambiarEstadoSolicitudVisitaSchema>;
