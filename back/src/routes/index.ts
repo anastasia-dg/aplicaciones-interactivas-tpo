@@ -1,5 +1,3 @@
-// Importa Router desde Express.
-//
 // Router sirve para crear y organizar
 // las rutas que va a tener nuestra API.
 import { Router } from "express";
@@ -13,6 +11,8 @@ import { resenaRouter } from "./resena.routes";
 import { solicitudVisitaRouter } from "./solicitud-visita.routes";
 import { vendedorRouter } from "./vendedor.routes";
 import { registroRouter } from "./registro.routes";
+import { loginRouter } from "./login.routes";
+import { dashboardRouter } from "./dashboard.routes";
 
 
 // Crea un router.
@@ -113,3 +113,15 @@ router.use(
   "/registro",
    registroRouter
   );
+
+// LOGIN
+router.use(
+  "/login",
+  loginRouter
+);
+
+//DASHBOARD
+router.use(
+  "/dashboard", 
+  dashboardRouter
+);

@@ -6,16 +6,16 @@ import { Propiedad } from "../entities/propiedad.entity";
 
 class PropiedadRepository {
 
-  // Este getter obtiene el Repository de TypeORM para la entidad Propiedad.
-  // Con él podemos hacer operaciones en la BD: buscar, guardar, eliminar, etc.
+  // Este getter obtiene el Repository de TypeORM para la entidad Propiedad
+  // Con él podemos hacer operaciones en la BD: buscar, guardar, eliminar
   //
-  // Se obtiene cuando lo necesitamos y NO al cargar el archivo.
+  // Se obtiene cuando lo necesitamos y NO al cargar el archivo
   private get repository(): Repository<Propiedad> {
     return AppDataSource.getRepository(Propiedad);
   }
 
-  // Devuelve todas las propiedades guardadas en la base de datos.
-  // También trae las fotos y la inmobiliaria relacionadas con cada propiedad.
+  // Devuelve todas las propiedades guardadas en la base de datos
+  // También trae las fotos y la inmobiliaria relacionadas con cada propiedad
   listar(): Promise<Propiedad[]> {
     return this.repository.find({
       relations: ["fotos", "inmobiliaria"],
@@ -65,6 +65,87 @@ class PropiedadRepository {
   // Elimina una propiedad de la base de datos según su ID.
   eliminar(id: number) {
     return this.repository.delete(id);
+  }
+
+
+  //DASHBOARD
+
+  // Cuenta las propiedades de una inmobiliaria agrupandolas por su estado actual
+  // Cuantas propiedades hay en cada estado (publicada, borrador, reservada, etc)
+  async contarPorEstado(inmobiliariaId: number) {
+
+    //consulta sobre la tabla de propiedades
+    const resultados = await this.repository
+      // "propiedad" es el nombre que le damos a TypeORM para identificar a nuestra entity propiedad
+      .createQueryBuilder("propiedad") // herramienta de TypeORM para construir consultas SQL
+
+      // Relacionamos cada propiedad con su inmobiliaria
+      .innerJoin("propiedad.inmobiliaria", "inmobiliaria") //"propiedad.inmobiliaria" la columna inmobiliaria en la tabla propiedad
+      // "inmobiliaria" es el nombre que queresmos darle a ese dato en el resultado
+
+      // Seleccionamos el estado de cada propiedad
+      .select("propiedad.estado", "estado")
+
+      // Contamos cuantas propiedades hay en cada estado, "cantidad" es el nombre del resultado
+      .addSelect("COUNT(propiedad.id)", "cantidad")
+
+      // Solo queremos las propiedades de esta inmobiliaria
+      .where("inmobiliaria.id = :inmobiliariaId", {
+        inmobiliariaId, // le pasamos el id que recibimos
+      })
+
+      // Agrupamos las propiedades que tienen el mismo estado
+      // para obtener un conteo separado para publicada, borrador, etc
+      .groupBy("propiedad.estado")
+
+      // Ejecutamos la consulta
+      .getRawMany();
+
+    // Convertimos la cantidad a número
+    return resultados.map((resultado) => ({ // map recorre cada elemento y lo devuelve con la forma que queremos (numeros)
+      estado: resultado.estado,
+      cantidad: Number(resultado.cantidad),
+    }));
+  }
+
+  // Cuenta cuantas propiedades se crearon por mes para una inmobiliaria determinada
+  async contarCreadasPorMes(inmobiliariaId: number) {
+
+    const resultados = await this.repository
+      .createQueryBuilder("propiedad")
+
+      // Relacionamos las propiedades con su inmobiliaria
+      .innerJoin("propiedad.inmobiliaria", "inmobiliaria")
+
+      // Obtenemos el año y el mes de creación
+      // TO_CHAR() es una funcion de PostgreSQL que convierte una fecha en texto con el formato correcto
+      .select(
+        "TO_CHAR(propiedad.fechaCreacion, 'YYYY-MM')",
+        "mes"
+      )
+
+      // Contamos las propiedades creadas en cada mes
+      .addSelect("COUNT(propiedad.id)", "cantidad")
+
+      // Filtramos por inmobiliaria
+      .where("inmobiliaria.id = :inmobiliariaId", {
+        inmobiliariaId,
+      })
+
+      // Agrupamos por año y mes
+      .groupBy(
+        "TO_CHAR(propiedad.fechaCreacion, 'YYYY-MM')"
+      )
+
+      // Ordenamos desde el mes más antiguo
+      .orderBy("mes", "ASC")
+
+      .getRawMany();
+
+    return resultados.map((resultado) => ({
+      mes: resultado.mes,
+      cantidad: Number(resultado.cantidad),
+    }));
   }
 }
 

@@ -70,6 +70,16 @@ class VendedorRepository {
     // Lo guardamos dentro de la transacción.
     return repository.save(vendedor);
   }
+
+  
+  // Busca un vendedor por email e incluye su contraseña encriptada para poder comprobarla durante el login
+  buscarPorEmailConContrasena(email: string): Promise<Vendedor | null> {
+    return this.repository
+      .createQueryBuilder("vendedor") //cpntruir una consulta a PostgreSQL, "VENDEDOR" es un alias para referirnos a la entity
+      .addSelect("vendedor.contrasenaHash") //trae la contra encriptada aunque tenga select: false
+      .where("vendedor.email = :email", { email }) //busca al vendedor cuyo correo coincide con el que recibimos
+      .getOne(); //ejecuta la consulta y devuelve al vendedor encontrado o null
+  }
 }
 
 
