@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { EntityManager, Repository } from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { Vendedor } from "../entities/vendedor.entity";
 
@@ -51,6 +51,24 @@ class VendedorRepository {
   // Elimina un vendedor de la base de datos según su ID.
   eliminar(id: number) {
     return this.repository.delete(id);
+  }
+
+  // Crea un vendedor utilizando la transacción que recibe desde el Service de registro
+  crearEnTransaccion(
+    datos: Partial<Vendedor>,
+    manager: EntityManager
+  ): Promise<Vendedor> {
+
+    // Obtenemos el repositorio de Vendedor asociado a ESTA transacción
+    //trabajamos con la tabla de vendedores dentro de la transaccion 
+    // manager identifica que transaccion estamos usando
+    const repository = manager.getRepository(Vendedor); 
+
+    // Creamos el objeto Vendedor.
+    const vendedor = repository.create(datos);
+
+    // Lo guardamos dentro de la transacción.
+    return repository.save(vendedor);
   }
 }
 

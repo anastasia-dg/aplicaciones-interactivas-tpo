@@ -1,5 +1,5 @@
 // Repository es el tipo que nos da TypeORM para trabajar con una entidad
-import { Repository } from "typeorm";
+import { EntityManager, Repository } from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { Inmobiliaria } from "../entities/inmobiliaria.entity";
 
@@ -68,6 +68,24 @@ class InmobiliariaRepository {
   // Elimina una inmobiliaria según su ID.
   eliminar(id: number) {
     return this.repository.delete(id);
+  }
+
+  // Crea una inmobiliaria utilizando la misma
+  // transacción que se usó para crear al vendedor.
+  crearEnTransaccion(
+    datos: Partial<Inmobiliaria>,
+    manager: EntityManager
+  ): Promise<Inmobiliaria> {
+
+    // Obtenemos el repositorio de Inmobiliaria
+    // asociado a la transacción.
+    const repository = manager.getRepository(Inmobiliaria);
+
+    // Creamos el objeto Inmobiliaria.
+    const inmobiliaria = repository.create(datos);
+
+    // Lo guardamos dentro de la transacción.
+    return repository.save(inmobiliaria);
   }
 }
 

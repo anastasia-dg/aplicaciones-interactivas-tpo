@@ -12,6 +12,7 @@ import { propiedadRouter } from "./propiedad.routes";
 import { resenaRouter } from "./resena.routes";
 import { solicitudVisitaRouter } from "./solicitud-visita.routes";
 import { vendedorRouter } from "./vendedor.routes";
+import { registroRouter } from "./registro.routes";
 
 
 // Crea un router.
@@ -106,3 +107,9 @@ router.use(
   "/vendedores",
   vendedorRouter
 );
+
+//REGISTRO VENDEDOR - INMOBILIARIA
+router.use(
+  "/registro",
+   registroRouter
+  );
