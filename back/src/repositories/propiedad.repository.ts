@@ -17,8 +17,8 @@ class PropiedadRepository {
   // Arma el "where" de TypeORM a partir de los filtros recibidos.
   // Solo agregamos una condición si ese filtro realmente vino.
   private construirWhere(
-    filtros: ListarPropiedadesDto
-  ): FindOptionsWhere<Propiedad> {
+  filtros: ListarPropiedadesDto
+): FindOptionsWhere<Propiedad> | FindOptionsWhere<Propiedad>[] {
 
     const where: FindOptionsWhere<Propiedad> = {};
 
@@ -69,6 +69,21 @@ class PropiedadRepository {
 
     if (filtros.baniosMin !== undefined) {
       where.banios = MoreThanOrEqual(filtros.baniosMin);
+    }
+
+    // Si viene un texto de búsqueda, buscamos ese texto
+    // tanto en el título COMO en la descripción.
+    if (filtros.texto) {
+      return [
+        {
+          ...where,
+          titulo: ILike(`%${filtros.texto}%`),
+        },
+        {
+          ...where,
+          descripcion: ILike(`%${filtros.texto}%`),
+        },
+      ];
     }
 
     return where;

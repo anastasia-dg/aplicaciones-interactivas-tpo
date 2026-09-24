@@ -116,6 +116,7 @@ async function crearPropiedadDePrueba(
   datos: Partial<{
     titulo: string;
     tipo: TipoPropiedad;
+    descripcion: string;
     operacion: TipoOperacion;
     estado: EstadoPropiedad;
     precio: number;
@@ -130,7 +131,7 @@ async function crearPropiedadDePrueba(
 
   return propiedadRepository.crear({
     titulo: datos.titulo ?? `Propiedad de prueba ${sufijo}`,
-    descripcion: "Descripción de prueba",
+    descripcion: datos.descripcion ?? "Descripción de prueba",
     tipo: datos.tipo ?? TipoPropiedad.CASA,
     operacion: datos.operacion ?? TipoOperacion.VENTA,
     precio: String(datos.precio ?? 100000),
@@ -871,6 +872,141 @@ describe("GET /propiedades — filtros y paginación", () => {
         .query({ limit: 100 });
 
       expect(respuesta.status).toBe(400);
+    });
+
+    // ======================================================
+    // TESTS DE BÚSQUEDA POR TEXTO
+    // ======================================================
+
+    test("busca una propiedad por texto en el título", async () => {
+      const inmobiliaria = await crearInmobiliariaDePrueba();
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa con pileta",
+      });
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Departamento céntrico",
+      });
+
+      const respuesta = await request(app)
+        .get("/propiedades")
+        .query({ texto: "pileta" });
+
+      expect(respuesta.status).toBe(200);
+      expect(respuesta.body.propiedades).toHaveLength(1);
+      expect(respuesta.body.propiedades[0].titulo).toBe("Casa con pileta");
+    });
+
+
+    test("busca una propiedad por texto en la descripción", async () => {
+      const inmobiliaria = await crearInmobiliariaDePrueba();
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa en venta",
+        descripcion: "Hermosa propiedad con jardín amplio",
+      });
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Departamento",
+        descripcion: "Departamento ubicado en el centro",
+      });
+
+      const respuesta = await request(app)
+        .get("/propiedades")
+        .query({ texto: "jardín" });
+
+      expect(respuesta.status).toBe(200);
+      expect(respuesta.body.propiedades).toHaveLength(1);
+      expect(respuesta.body.propiedades[0].titulo).toBe("Casa en venta");
+    });
+
+
+    test("la búsqueda por texto no distingue mayúsculas y minúsculas", async () => {
+      const inmobiliaria = await crearInmobiliariaDePrueba();
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa Frente al MAR",
+      });
+
+      const respuesta = await request(app)
+        .get("/propiedades")
+        .query({ texto: "mar" });
+
+      expect(respuesta.status).toBe(200);
+      expect(respuesta.body.propiedades).toHaveLength(1);
+      expect(respuesta.body.propiedades[0].titulo).toBe("Casa Frente al MAR");
+    });
+
+
+    test("la búsqueda por texto es parcial", async () => {
+      const inmobiliaria = await crearInmobiliariaDePrueba();
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Departamento con balcón",
+      });
+
+      const respuesta = await request(app)
+        .get("/propiedades")
+        .query({ texto: "balc" });
+
+      expect(respuesta.status).toBe(200);
+      expect(respuesta.body.propiedades).toHaveLength(1);
+      expect(respuesta.body.propiedades[0].titulo).toBe(
+        "Departamento con balcón"
+      );
+    });
+
+
+    test("texto sin coincidencias devuelve una lista vacía", async () => {
+      const inmobiliaria = await crearInmobiliariaDePrueba();
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa en el centro",
+        descripcion: "Casa de tres ambientes",
+      });
+
+      const respuesta = await request(app)
+        .get("/propiedades")
+        .query({ texto: "playa" });
+
+      expect(respuesta.status).toBe(200);
+      expect(respuesta.body.propiedades).toHaveLength(0);
+    });
+
+
+    test("combina búsqueda por texto con otros filtros", async () => {
+      const inmobiliaria = await crearInmobiliariaDePrueba();
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa con pileta",
+        tipo: TipoPropiedad.CASA,
+        zona: "Centro",
+      });
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Departamento con pileta",
+        tipo: TipoPropiedad.DEPARTAMENTO,
+        zona: "Centro",
+      });
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa con pileta en Palermo",
+        tipo: TipoPropiedad.CASA,
+        zona: "Palermo",
+      });
+
+      const respuesta = await request(app)
+        .get("/propiedades")
+        .query({
+          texto: "pileta",
+          tipo: TipoPropiedad.CASA,
+          zona: "centro",
+        });
+
+      expect(respuesta.status).toBe(200);
+      expect(respuesta.body.propiedades).toHaveLength(1);
+      expect(respuesta.body.propiedades[0].titulo).toBe("Casa con pileta");
     });
 
     // ======================================================

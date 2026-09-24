@@ -236,6 +236,12 @@ export const listarPropiedadesSchema = z
       .enum(["ASC", "DESC"])
       .default("DESC"),
 
+    texto: z
+    .string()
+    .trim() //elimina espacio de los extremos
+    .min(1)
+    .optional(),
+
     // PAGINACIÓN
     //
     // Si no mandan page/limit, usamos valores por defecto
