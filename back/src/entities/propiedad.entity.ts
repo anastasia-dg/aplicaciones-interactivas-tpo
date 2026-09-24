@@ -156,6 +156,7 @@ export class Propiedad {
   // a una misma inmobiliaria.
   @ManyToOne(() => Inmobiliaria, {
     nullable: false,
+    onDelete: "CASCADE",
   })
 
   // Nombre de la clave foránea en la base de datos.
