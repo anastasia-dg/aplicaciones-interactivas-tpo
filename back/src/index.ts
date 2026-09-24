@@ -88,4 +88,10 @@ AppDataSource.initialize()
 //
 // Esto permite que otro archivo pueda importar "app"
 // si más adelante se necesita, por ejemplo para hacer tests.
+if (process.env.NODE_ENV !== 'test'){
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log('servidor corriendo en puerto ${PORT}')
+  })};
+
 export { app };
