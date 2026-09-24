@@ -227,6 +227,12 @@ export const listarPropiedadesSchema = z
       .nonnegative("La cantidad de baños no puede ser negativa")
       .optional(),
 
+    amenities: z
+      .string()
+      .trim()
+      .min(1)
+      .optional(),
+
     // ORDENAMIENTO
     ordenarPor: z
       .enum(["precio", "fecha", "superficie"])

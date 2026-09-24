@@ -1,7 +1,7 @@
 // Repository es el tipo que nos da TypeORM para trabajar con una entidad
 import { AppDataSource } from "../config/data-source";
 import { Propiedad } from "../entities/propiedad.entity";
-import {Repository,FindOptionsWhere,ILike,Between,MoreThanOrEqual,LessThanOrEqual,} from "typeorm";
+import {Repository,FindOptionsWhere,ILike,Between,MoreThanOrEqual,LessThanOrEqual, Raw,} from "typeorm";
 import { ListarPropiedadesDto } from "../dtos/propiedad-dto";
 
 class PropiedadRepository {
@@ -69,6 +69,33 @@ class PropiedadRepository {
 
     if (filtros.baniosMin !== undefined) {
       where.banios = MoreThanOrEqual(filtros.baniosMin);
+    }
+
+    // Filtramos por amenities.
+    // Como "tags" es un simple-array, TypeORM lo guarda como texto separado por comas.
+    if (filtros.amenities) {
+      const amenities = filtros.amenities
+        .split(",")
+        .map((amenity) => amenity.trim())
+        .filter((amenity) => amenity.length > 0);
+
+      if (amenities.length > 0) {
+        where.tags = Raw(
+          (alias) =>
+            amenities
+              .map(
+                (_, index) =>
+                  `(',' || LOWER(${alias}) || ',') LIKE :amenity${index}`
+              )
+              .join(" AND "),
+          Object.fromEntries(
+            amenities.map((amenity, index) => [
+              `amenity${index}`,
+              `%,${amenity.toLowerCase()},%`,
+            ])
+          )
+        );
+      }
     }
 
     // Si viene un texto de búsqueda, buscamos ese texto

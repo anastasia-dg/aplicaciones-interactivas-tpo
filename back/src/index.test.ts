@@ -115,6 +115,7 @@ async function crearPropiedadDePrueba(
   inmobiliaria: Inmobiliaria,
   datos: Partial<{
     titulo: string;
+    tags: string[];
     tipo: TipoPropiedad;
     descripcion: string;
     operacion: TipoOperacion;
@@ -144,7 +145,7 @@ async function crearPropiedadDePrueba(
     dormitorios: datos.dormitorios ?? 2,
     banios: datos.banios ?? 1,
     antiguedadAnios: 5,
-    tags: [],
+    tags: datos.tags ?? [],
     estado: datos.estado ?? EstadoPropiedad.BORRADOR,
     inmobiliaria,
   });
@@ -1007,6 +1008,129 @@ describe("GET /propiedades — filtros y paginación", () => {
       expect(respuesta.status).toBe(200);
       expect(respuesta.body.propiedades).toHaveLength(1);
       expect(respuesta.body.propiedades[0].titulo).toBe("Casa con pileta");
+    });
+
+    test("filtra propiedades por un amenity", async () => {
+      const inmobiliaria = await crearInmobiliariaDePrueba();
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa con pileta",
+        tags: ["pileta", "cochera"],
+      });
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa sin pileta",
+        tags: ["balcon"],
+      });
+
+      const respuesta = await request(app)
+        .get("/propiedades")
+        .query({ amenities: "pileta" });
+
+      expect(respuesta.status).toBe(200);
+      expect(respuesta.body.propiedades).toHaveLength(1);
+      expect(respuesta.body.propiedades[0].titulo).toBe("Casa con pileta");
+    });
+
+
+    test("filtra propiedades que tengan todos los amenities solicitados", async () => {
+      const inmobiliaria = await crearInmobiliariaDePrueba();
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa completa",
+        tags: ["pileta", "cochera", "balcon"],
+      });
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa solo pileta",
+        tags: ["pileta"],
+      });
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa solo cochera",
+        tags: ["cochera"],
+      });
+
+      const respuesta = await request(app)
+        .get("/propiedades")
+        .query({ amenities: "pileta,cochera" });
+
+      expect(respuesta.status).toBe(200);
+      expect(respuesta.body.propiedades).toHaveLength(1);
+      expect(respuesta.body.propiedades[0].titulo).toBe("Casa completa");
+    });
+
+
+    test("el filtro de amenities no distingue mayúsculas y minúsculas", async () => {
+      const inmobiliaria = await crearInmobiliariaDePrueba();
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa equipada",
+        tags: ["Pileta", "Cochera"],
+      });
+
+      const respuesta = await request(app)
+        .get("/propiedades")
+        .query({ amenities: "PILETA" });
+
+      expect(respuesta.status).toBe(200);
+      expect(respuesta.body.propiedades).toHaveLength(1);
+      expect(respuesta.body.propiedades[0].titulo).toBe("Casa equipada");
+    });
+
+
+    test("amenities se puede combinar con otros filtros", async () => {
+      const inmobiliaria = await crearInmobiliariaDePrueba();
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "La correcta",
+        tipo: TipoPropiedad.CASA,
+        zona: "Centro",
+        tags: ["pileta", "cochera"],
+      });
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Tipo incorrecto",
+        tipo: TipoPropiedad.DEPARTAMENTO,
+        zona: "Centro",
+        tags: ["pileta", "cochera"],
+      });
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Amenity incorrecto",
+        tipo: TipoPropiedad.CASA,
+        zona: "Centro",
+        tags: ["balcon"],
+      });
+
+      const respuesta = await request(app)
+        .get("/propiedades")
+        .query({
+          amenities: "pileta,cochera",
+          tipo: TipoPropiedad.CASA,
+          zona: "centro",
+        });
+
+      expect(respuesta.status).toBe(200);
+      expect(respuesta.body.propiedades).toHaveLength(1);
+      expect(respuesta.body.propiedades[0].titulo).toBe("La correcta");
+    });
+
+
+    test("amenity inexistente devuelve una lista vacía", async () => {
+      const inmobiliaria = await crearInmobiliariaDePrueba();
+
+      await crearPropiedadDePrueba(inmobiliaria, {
+        titulo: "Casa",
+        tags: ["pileta"],
+      });
+
+      const respuesta = await request(app)
+        .get("/propiedades")
+        .query({ amenities: "sauna" });
+
+      expect(respuesta.status).toBe(200);
+      expect(respuesta.body.propiedades).toHaveLength(0);
     });
 
     // ======================================================
