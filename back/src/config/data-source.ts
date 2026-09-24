@@ -9,7 +9,13 @@ export const AppDataSource = new DataSource({
   port: Number(process.env.DB_PORT ?? 5432),
   username: process.env.DB_USER ?? "postgres",
   password: process.env.DB_PASSWORD ?? "postgres",
-  database: process.env.DB_NAME ?? "tpo_inmobiliario",
+
+  // Si estamos ejecutando tests usamos la base de test.
+  // Si no, usamos nuestra base normal
+  database:
+  process.env.NODE_ENV === "test"
+    ? "tpo_inmobiliario_test"
+    : process.env.DB_NAME ?? "tpo_inmobiliario",
   synchronize: false,
   logging: false,
   entities: [join(__dirname, "..", "entities", "**", "*.{ts,js}")],

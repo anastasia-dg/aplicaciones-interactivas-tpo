@@ -66,32 +66,25 @@ app.use(express.json());
 app.use(router);
 
 
-// Enciende el servidor.
-//
-// "listen" significa que el servidor queda esperando
-// peticiones en el puerto definido anteriormente.
-AppDataSource.initialize()
-  .then(() => {
-    console.log("Data source initialized");
+// Si estamos ejecutando tests, NO levantamos el servidor
+// Los tests necesitan importar "app" sin ocupar un puerto
+if (process.env.NODE_ENV !== "test") {
 
-    app.listen(port, () => {
-      console.log(`API running on http://localhost:${port}`);
+  // Primero inicializamos la conexión con PostgreSQL
+  AppDataSource.initialize()
+    .then(() => {
+      console.log("Data source initialized");
+
+      // Una vez conectada la base de datos,
+      // levantamos el servidor de Express
+      app.listen(port, () => {
+        console.log(`API running on http://localhost:${port}`);
+      });
+    })
+    .catch((error: unknown) => {
+      console.error("Error initializing data source", error);
+      process.exit(1);
     });
-  })
-  .catch((error: unknown) => {
-    console.error("Error initializing data source", error);
-    process.exit(1);
-  });
-
-
-// Exporta la aplicación Express.
-//
-// Esto permite que otro archivo pueda importar "app"
-// si más adelante se necesita, por ejemplo para hacer tests.
-if (process.env.NODE_ENV !== 'test'){
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log('servidor corriendo en puerto ${PORT}')
-  })};
+}
 
 export { app };
