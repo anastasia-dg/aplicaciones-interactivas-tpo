@@ -138,7 +138,7 @@ export const crearPropiedadSchema = z.object({
   // Ejemplo:
   // ["pileta", "cochera", "balcon"]
   //
-  // Cada elemento tiene que ser un texto.
+  // Cada elemento tiene que ser un texto
   tags: z
     .array(z.string())
     .optional(),
@@ -180,13 +180,13 @@ export const cambiarEstadoPropiedadSchema = z.object({
 export const listarPropiedadesSchema = z
   .object({
 
-    // Filtros exactos: coinciden con los enums de la Entity.
+    // Filtros exactos: coinciden con los enums de la Entity
     tipo: z.nativeEnum(TipoPropiedad).optional(),
     operacion: z.nativeEnum(TipoOperacion).optional(),
     estado: z.nativeEnum(EstadoPropiedad).optional(),
     moneda: z.enum(["ARS", "USD"]).optional(),
 
-    // Zona: búsqueda parcial (no hace falta escribirla completa).
+    // Zona: búsqueda parcial (no hace falta escribirla completa)
     zona: z
       .string()
       .min(1, "La zona no puede estar vacía")
@@ -205,7 +205,7 @@ export const listarPropiedadesSchema = z
       .nonnegative("El precio máximo no puede ser negativo")
       .optional(),
 
-    // Mínimos de ambientes/dormitorios/baños.
+    // Mínimos de ambientes/dormitorios/baños
     ambientesMin: z
       .coerce
       .number()
@@ -247,7 +247,7 @@ export const listarPropiedadesSchema = z
       .default(10),
   })
 
-  // Regla cruzada: el precio mínimo no puede ser mayor al máximo.
+  // Regla cruzada: el precio mínimo no puede ser mayor al máximo
   .refine(
     (datos) =>
       datos.precioMin === undefined ||

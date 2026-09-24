@@ -21,7 +21,7 @@ import { fotoPropiedadRepository } from "../repositories/foto-propiedad.reposito
 
 class PropiedadService {
 
-  // Devuelve las propiedades filtradas junto con los datos de paginación.
+  // Devuelve las propiedades filtradas junto con los datos de paginación
   async listar(filtros: ListarPropiedadesDto): Promise<{
     propiedades: Propiedad[];
     paginacion: {
@@ -36,9 +36,12 @@ class PropiedadService {
       await propiedadRepository.listar(filtros);
 
     // Si no hay resultados, igual devolvemos totalPaginas = 1
-    // para que el frontend no tenga que contemplar el caso 0.
-    const totalPaginas = Math.max(
-      Math.ceil(total / filtros.limit),
+    // para que el frontend no tenga que contemplar el caso 0
+    // 15 propiedades
+    // limit = 5
+    // 15 / 5 = 3 páginas
+    const totalPaginas = Math.max( //el repository devuelve propiedades + total
+      Math.ceil(total / filtros.limit), //math.ceil redondea para arriba
       1
     );
 

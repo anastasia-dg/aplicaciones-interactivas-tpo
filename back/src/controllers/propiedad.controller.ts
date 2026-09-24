@@ -10,13 +10,13 @@ import { propiedadService } from "../services/propiedad-service";
 
 class PropiedadController {
 
-  // Devuelve las propiedades filtradas y paginadas.
+  // Devuelve las propiedades filtradas y paginadas
   async listar(request: Request, response: Response) {
 
     try {
 
       // Validamos los query params
-      // con el mismo patrón que usamos para el body en crear/actualizar.
+      // con el mismo patrón que usamos para el body en crear/actualizar
       const resultado = listarPropiedadesSchema.safeParse(
         request.query
       );
@@ -266,7 +266,13 @@ class PropiedadController {
 
           error.message.startsWith(
             "No se puede cambiar de"
-          )
+          ) ||
+
+          error.message ===
+            "La propiedad debe tener al menos una foto para ser publicada" ||
+
+          error.message ===
+            "La propiedad debe tener exactamente una foto de portada"
         )
       ) {
         return response.status(409).json({
