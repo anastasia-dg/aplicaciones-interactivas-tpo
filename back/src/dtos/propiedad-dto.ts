@@ -227,6 +227,15 @@ export const listarPropiedadesSchema = z
       .nonnegative("La cantidad de baños no puede ser negativa")
       .optional(),
 
+    // ORDENAMIENTO
+    ordenarPor: z
+      .enum(["precio", "fecha", "superficie"])
+      .default("fecha"),
+
+    orden: z
+      .enum(["ASC", "DESC"])
+      .default("DESC"),
+
     // PAGINACIÓN
     //
     // Si no mandan page/limit, usamos valores por defecto

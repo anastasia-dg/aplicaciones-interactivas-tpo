@@ -873,6 +873,133 @@ describe("GET /propiedades — filtros y paginación", () => {
       expect(respuesta.status).toBe(400);
     });
 
+    // ======================================================
+    // TESTS DE ORDENAMIENTO
+    // ======================================================
+
+    test("ordena propiedades por precio de menor a mayor", async () => {
+      const response = await request(app)
+        .get("/propiedades?ordenarPor=precio&orden=ASC");
+
+      expect(response.status).toBe(200);
+
+      const propiedades = response.body.propiedades;
+
+      for (let i = 1; i < propiedades.length; i++) {
+        expect(Number(propiedades[i].precio)).toBeGreaterThanOrEqual(
+          Number(propiedades[i - 1].precio)
+        );
+      }
+    });
+
+
+    test("ordena propiedades por precio de mayor a menor", async () => {
+      const response = await request(app)
+        .get("/propiedades?ordenarPor=precio&orden=DESC");
+
+      expect(response.status).toBe(200);
+
+      const propiedades = response.body.propiedades;
+
+      for (let i = 1; i < propiedades.length; i++) {
+        expect(Number(propiedades[i].precio)).toBeLessThanOrEqual(
+          Number(propiedades[i - 1].precio)
+        );
+      }
+    });
+
+
+    test("ordena propiedades por superficie de menor a mayor", async () => {
+      const response = await request(app)
+        .get("/propiedades?ordenarPor=superficie&orden=ASC");
+
+      expect(response.status).toBe(200);
+
+      const propiedades = response.body.propiedades;
+
+      for (let i = 1; i < propiedades.length; i++) {
+        expect(Number(propiedades[i].superficieTotalM2)).toBeGreaterThanOrEqual(
+          Number(propiedades[i - 1].superficieTotalM2)
+        );
+      }
+    });
+
+
+    test("ordena propiedades por superficie de mayor a menor", async () => {
+      const response = await request(app)
+        .get("/propiedades?ordenarPor=superficie&orden=DESC");
+
+      expect(response.status).toBe(200);
+
+      const propiedades = response.body.propiedades;
+
+      for (let i = 1; i < propiedades.length; i++) {
+        expect(Number(propiedades[i].superficieTotalM2)).toBeLessThanOrEqual(
+          Number(propiedades[i - 1].superficieTotalM2)
+        );
+      }
+    });
+
+
+    test("ordena propiedades por fecha de más antigua a más nueva", async () => {
+      const response = await request(app)
+        .get("/propiedades?ordenarPor=fecha&orden=ASC");
+
+      expect(response.status).toBe(200);
+
+      const propiedades = response.body.propiedades;
+
+      for (let i = 1; i < propiedades.length; i++) {
+        const fechaAnterior = new Date(
+          propiedades[i - 1].fechaCreacion
+        ).getTime();
+
+        const fechaActual = new Date(
+          propiedades[i].fechaCreacion
+        ).getTime();
+
+        expect(fechaActual).toBeGreaterThanOrEqual(fechaAnterior);
+      }
+    });
+
+
+    test("ordena propiedades por fecha de más nueva a más antigua", async () => {
+      const response = await request(app)
+        .get("/propiedades?ordenarPor=fecha&orden=DESC");
+
+      expect(response.status).toBe(200);
+
+      const propiedades = response.body.propiedades;
+
+      for (let i = 1; i < propiedades.length; i++) {
+        const fechaAnterior = new Date(
+          propiedades[i - 1].fechaCreacion
+        ).getTime();
+
+        const fechaActual = new Date(
+          propiedades[i].fechaCreacion
+        ).getTime();
+
+        expect(fechaActual).toBeLessThanOrEqual(fechaAnterior);
+      }
+    });
+
+
+    test("rechaza un campo de ordenamiento inválido", async () => {
+      const response = await request(app)
+        .get("/propiedades?ordenarPor=cualquierCosa&orden=ASC");
+
+      expect(response.status).toBe(400);
+    });
+
+
+    test("rechaza una dirección de ordenamiento inválida", async () => {
+      const response = await request(app)
+        .get("/propiedades?ordenarPor=precio&orden=CUALQUIERA");
+
+      expect(response.status).toBe(400);
+    });
+
   });
 
 });

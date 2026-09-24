@@ -87,8 +87,13 @@ class PropiedadRepository {
       where,
       relations: ["fotos", "inmobiliaria"],
 
-      // Las más nuevas primero.
-      order: { fechaCreacion: "DESC" },
+      order: {
+        [filtros.ordenarPor === "fecha"
+          ? "fechaCreacion"
+          : filtros.ordenarPor === "superficie"
+          ? "superficieTotalM2"
+          : "precio"]: filtros.orden,
+      },
 
       // Página 1 = los primeros "limit" resultados.
       skip: (filtros.page - 1) * filtros.limit,
