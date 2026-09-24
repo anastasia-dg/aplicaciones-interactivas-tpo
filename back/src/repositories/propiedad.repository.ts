@@ -1,8 +1,8 @@
 // Repository es el tipo que nos da TypeORM para trabajar con una entidad
-import { Repository } from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { Propiedad } from "../entities/propiedad.entity";
-
+import {Repository,FindOptionsWhere,ILike,Between,MoreThanOrEqual,LessThanOrEqual,} from "typeorm";
+import { ListarPropiedadesDto } from "../dtos/propiedad-dto";
 
 class PropiedadRepository {
 
@@ -14,12 +14,88 @@ class PropiedadRepository {
     return AppDataSource.getRepository(Propiedad);
   }
 
-  // Devuelve todas las propiedades guardadas en la base de datos
-  // También trae las fotos y la inmobiliaria relacionadas con cada propiedad
-  listar(): Promise<Propiedad[]> {
-    return this.repository.find({
+  // Arma el "where" de TypeORM a partir de los filtros recibidos.
+  // Solo agregamos una condición si ese filtro realmente vino.
+  private construirWhere(
+    filtros: ListarPropiedadesDto
+  ): FindOptionsWhere<Propiedad> {
+
+    const where: FindOptionsWhere<Propiedad> = {};
+
+    if (filtros.tipo) {
+      where.tipo = filtros.tipo;
+    }
+
+    if (filtros.operacion) {
+      where.operacion = filtros.operacion;
+    }
+
+    if (filtros.estado) {
+      where.estado = filtros.estado;
+    }
+
+    if (filtros.moneda) {
+      where.moneda = filtros.moneda;
+    }
+
+    // Búsqueda parcial: "belgrano" encuentra "Belgrano Sur".
+    if (filtros.zona) {
+      where.zona = ILike(`%${filtros.zona}%`);
+    }
+
+    // Rango de precio: si vinieron los dos límites usamos Between,
+    // si vino uno solo usamos el operador que corresponda.
+    if (
+      filtros.precioMin !== undefined &&
+      filtros.precioMax !== undefined
+    ) {
+      where.precio = Between(
+        String(filtros.precioMin),
+        String(filtros.precioMax)
+      );
+    } else if (filtros.precioMin !== undefined) {
+      where.precio = MoreThanOrEqual(String(filtros.precioMin));
+    } else if (filtros.precioMax !== undefined) {
+      where.precio = LessThanOrEqual(String(filtros.precioMax));
+    }
+
+    if (filtros.ambientesMin !== undefined) {
+      where.ambientes = MoreThanOrEqual(filtros.ambientesMin);
+    }
+
+    if (filtros.dormitoriosMin !== undefined) {
+      where.dormitorios = MoreThanOrEqual(filtros.dormitoriosMin);
+    }
+
+    if (filtros.baniosMin !== undefined) {
+      where.banios = MoreThanOrEqual(filtros.baniosMin);
+    }
+
+    return where;
+  }
+
+
+  // Devuelve las propiedades que cumplen los filtros, paginadas
+
+  async listar(
+    filtros: ListarPropiedadesDto
+  ): Promise<{ propiedades: Propiedad[]; total: number }> {
+
+    const where = this.construirWhere(filtros);
+
+    const [propiedades, total] = await this.repository.findAndCount({
+      where,
       relations: ["fotos", "inmobiliaria"],
+
+      // Las más nuevas primero.
+      order: { fechaCreacion: "DESC" },
+
+      // Página 1 = los primeros "limit" resultados.
+      skip: (filtros.page - 1) * filtros.limit,
+      take: filtros.limit,
     });
+
+    return { propiedades, total };
   }
 
   // Busca UNA propiedad según su ID.

@@ -14,15 +14,43 @@ import {
 import {
   CrearPropiedadDto,
   ActualizarPropiedadDto,
+  ListarPropiedadesDto,
 } from "../dtos/propiedad-dto";
 import { fotoPropiedadRepository } from "../repositories/foto-propiedad.repository";
 
 
 class PropiedadService {
 
-  // Devuelve todas las propiedades
-  async listar(): Promise<Propiedad[]> {
-    return propiedadRepository.listar();
+  // Devuelve las propiedades filtradas junto con los datos de paginación.
+  async listar(filtros: ListarPropiedadesDto): Promise<{
+    propiedades: Propiedad[];
+    paginacion: {
+      paginaActual: number;
+      porPagina: number;
+      totalRegistros: number;
+      totalPaginas: number;
+    };
+  }> {
+
+    const { propiedades, total } =
+      await propiedadRepository.listar(filtros);
+
+    // Si no hay resultados, igual devolvemos totalPaginas = 1
+    // para que el frontend no tenga que contemplar el caso 0.
+    const totalPaginas = Math.max(
+      Math.ceil(total / filtros.limit),
+      1
+    );
+
+    return {
+      propiedades,
+      paginacion: {
+        paginaActual: filtros.page,
+        porPagina: filtros.limit,
+        totalRegistros: total,
+        totalPaginas,
+      },
+    };
   }
 
 

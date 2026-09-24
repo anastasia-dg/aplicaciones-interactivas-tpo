@@ -172,7 +172,96 @@ export const cambiarEstadoPropiedadSchema = z.object({
   estado: z.nativeEnum(EstadoPropiedad),
 });
 
+// DTO PARA LISTAR/FILTRAR PROPIEDADES
+//
+// Estos datos llegan por query string (GET /propiedades?tipo=CASA&page=2),
+// por eso todo llega como string y usamos z.coerce para convertir
+// a number donde corresponde.
+export const listarPropiedadesSchema = z
+  .object({
 
+    // Filtros exactos: coinciden con los enums de la Entity.
+    tipo: z.nativeEnum(TipoPropiedad).optional(),
+    operacion: z.nativeEnum(TipoOperacion).optional(),
+    estado: z.nativeEnum(EstadoPropiedad).optional(),
+    moneda: z.enum(["ARS", "USD"]).optional(),
+
+    // Zona: búsqueda parcial (no hace falta escribirla completa).
+    zona: z
+      .string()
+      .min(1, "La zona no puede estar vacía")
+      .optional(),
+
+    // Rango de precio.
+    precioMin: z
+      .coerce
+      .number()
+      .nonnegative("El precio mínimo no puede ser negativo")
+      .optional(),
+
+    precioMax: z
+      .coerce
+      .number()
+      .nonnegative("El precio máximo no puede ser negativo")
+      .optional(),
+
+    // Mínimos de ambientes/dormitorios/baños.
+    ambientesMin: z
+      .coerce
+      .number()
+      .int("La cantidad de ambientes debe ser un número entero")
+      .nonnegative("La cantidad de ambientes no puede ser negativa")
+      .optional(),
+
+    dormitoriosMin: z
+      .coerce
+      .number()
+      .int("La cantidad de dormitorios debe ser un número entero")
+      .nonnegative("La cantidad de dormitorios no puede ser negativa")
+      .optional(),
+
+    baniosMin: z
+      .coerce
+      .number()
+      .int("La cantidad de baños debe ser un número entero")
+      .nonnegative("La cantidad de baños no puede ser negativa")
+      .optional(),
+
+    // PAGINACIÓN
+    //
+    // Si no mandan page/limit, usamos valores por defecto
+    // gracias a .default().
+    page: z
+      .coerce
+      .number()
+      .int("La página debe ser un número entero")
+      .positive("La página debe ser mayor a 0")
+      .default(1),
+
+    limit: z
+      .coerce
+      .number()
+      .int("El límite debe ser un número entero")
+      .positive("El límite debe ser mayor a 0")
+      .max(50, "El límite no puede superar 50 resultados por página")
+      .default(10),
+  })
+
+  // Regla cruzada: el precio mínimo no puede ser mayor al máximo.
+  .refine(
+    (datos) =>
+      datos.precioMin === undefined ||
+      datos.precioMax === undefined ||
+      datos.precioMin <= datos.precioMax,
+    {
+      message: "El precio mínimo no puede ser mayor al precio máximo",
+      path: ["precioMin"],
+    }
+  );
+
+// Tipo de TypeScript generado a partir del schema.
+export type ListarPropiedadesDto =
+  z.infer<typeof listarPropiedadesSchema>;
 
 // TypeScript obtiene automáticamente
 // el tipo a partir del schema de Zod.

@@ -3,21 +3,40 @@ import {
   crearPropiedadSchema,
   actualizarPropiedadSchema,
   cambiarEstadoPropiedadSchema,
+  listarPropiedadesSchema,
 } from "../dtos/propiedad-dto";
 import { propiedadService } from "../services/propiedad-service";
 
 
 class PropiedadController {
 
-  // Devuelve todas las propiedades.
-  async listar(_request: Request, response: Response) {
+  // Devuelve las propiedades filtradas y paginadas.
+  async listar(request: Request, response: Response) {
 
     try {
 
-      // Le pedimos al Service todas las propiedades.
-      const propiedades = await propiedadService.listar();
+      // Validamos los query params
+      // con el mismo patrón que usamos para el body en crear/actualizar.
+      const resultado = listarPropiedadesSchema.safeParse(
+        request.query
+      );
 
-      return response.status(200).json(propiedades);
+      if (!resultado.success) {
+        return response.status(400).json({
+          mensaje: "Los filtros de búsqueda no son válidos",
+          errores: resultado.error.issues,
+        });
+      }
+
+      const filtros = resultado.data;
+
+      const { propiedades, paginacion } =
+        await propiedadService.listar(filtros);
+
+      return response.status(200).json({
+        propiedades,
+        paginacion,
+      });
 
     } catch (error) {
 
@@ -320,7 +339,6 @@ class PropiedadController {
     }
   }
 }
-
 
 // Creamos una sola instancia para usarla desde las rutas.
 export const propiedadController =
