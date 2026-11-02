@@ -154,11 +154,17 @@ class PropiedadService {
     // Buscamos las solicitudes de visita de la propiedad
     const solicitudes = await solicitudVisitaRepository.buscarPorPropiedad(id);
 
-    // Revisamos si tiene alguna visita confirmada.
-    const tieneVisitaConfirmada = solicitudes.some( //.some: si tiene al menos una
+    // Revisamos si tiene alguna visita confirmada FUTURA (si ya paso no bloquea)
+    
+    const ahora = new Date(); //pone la fecha actual
+
+    // Comprobamos si existe una visita confirmada con fecha que todavía no paso
+    const tieneVisitaConfirmada = solicitudes.some( //.some busca al menos una
       (solicitud) =>
-        solicitud.estado === EstadoSolicitudVisita.CONFIRMADA
+        solicitud.estado === EstadoSolicitudVisita.CONFIRMADA &&
+        new Date(solicitud.fechaHoraPropuesta) > ahora
     );
+
 
     if (tieneVisitaConfirmada) {
       throw new Error(
@@ -370,10 +376,15 @@ class PropiedadService {
     const solicitudes =
       await solicitudVisitaRepository.buscarPorPropiedad(id);
 
-    const tieneVisitaConfirmada = solicitudes.some(
-      (solicitud) =>
-        solicitud.estado === EstadoSolicitudVisita.CONFIRMADA
-    );
+    
+  const ahora = new Date();
+
+  const tieneVisitaConfirmada = solicitudes.some(
+    (solicitud) =>
+      solicitud.estado === EstadoSolicitudVisita.CONFIRMADA &&
+      new Date(solicitud.fechaHoraPropuesta) > ahora
+  );
+
 
     // No se puede eliminar si tiene una visita confirmada.
     if (tieneVisitaConfirmada) {
