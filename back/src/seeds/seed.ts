@@ -1,83 +1,293 @@
-// Importamos AppDataSource desde el archivo de configuración
-// de la base de datos.
-//
-// AppDataSource contiene la configuración que TypeORM necesita
-// para conectarse con PostgreSQL.
 import { AppDataSource } from "../config/data-source";
+import { Vendedor } from "../entities/vendedor.entity";
+import { Inmobiliaria } from "../entities/inmobiliaria.entity";
+import { Propiedad } from "../entities/propiedad.entity";
 
+import {
+  EstadoPropiedad,
+  TipoOperacion,
+  TipoPropiedad,
+} from "../entities/enums";
 
-// Creamos una función llamada "seed".
-//
-// Un SEED sirve para cargar datos iniciales o datos de prueba
-// dentro de nuestra base de datos.
-//
-// Por ejemplo, más adelante podríamos usarlo para crear
-// automáticamente vendedores, inmobiliarias y propiedades de prueba.
-//
-// "async" significa que dentro de esta función podemos realizar
-// operaciones asincrónicas, es decir, operaciones que pueden tardar,
-// como conectarnos con una base de datos.
-//
-// ": Promise<void>" indica que la función es asincrónica
-// y que, cuando termine, no devuelve ningún dato.
+import bcrypt from "bcryptjs";
+
 async function seed(): Promise<void> {
+  try {
+    // Conectamos con PostgreSQL
+    await AppDataSource.initialize();
 
-  // Inicia la conexión con la base de datos.
-  //
-  // AppDataSource tiene la configuración de PostgreSQL
-  // y TypeORM que necesita nuestro proyecto.
-  //
-  // "await" significa:
-  // "esperá a que termine de conectarse antes de continuar".
-  await AppDataSource.initialize();
+    console.log("🌱 Cargando datos de prueba...");
 
+    // Repositories de TypeORM
+    const vendedorRepo = AppDataSource.getRepository(Vendedor);
+    const inmobiliariaRepo = AppDataSource.getRepository(Inmobiliaria);
+    const propiedadRepo = AppDataSource.getRepository(Propiedad);
 
-  // Muestra este mensaje en la terminal.
-  //
-  // IMPORTANTE:
-  // Esta línea NO agrega ningún dato a la base de datos.
-  //
-  // El profesor dejó este mensaje para indicar que
-  // todavía falta programar los datos iniciales/de prueba.
-  console.log("Seed pendiente: agregar datos de desarrollo para el dominio.");
+    // =====================================================
+    // EVITAMOS DUPLICADOS
+    // =====================================================
 
+    const vendedorExistente = await vendedorRepo.findOne({
+      where: {
+        email: "ana.seed@tpo.com",
+      },
+    });
 
-  // Cierra la conexión con la base de datos.
-  //
-  // Como el seed se ejecuta, carga los datos y termina,
-  // no necesita quedarse conectado permanentemente.
-  await AppDataSource.destroy();
-}
+    if (vendedorExistente) {
+      console.log("⚠️ El seed ya fue cargado anteriormente.");
+      console.log("No se agregaron datos duplicados.");
+      return;
+    }
 
+    // =====================================================
+    // VENDEDOR
+    // =====================================================
 
-// Acá termina la función seed.
-// Hasta este momento solamente la DEFINIMOS.
-// Todavía necesitamos ejecutarla.
+    const contrasenaHash = await bcrypt.hash("123456", 10);
 
+    const vendedor = vendedorRepo.create({
+      nombreCompleto: "Ana Di Geronimo",
+      email: "ana.seed@tpo.com",
+      contrasenaHash,
+      telefono: "2255123456",
+    });
 
-// Ejecutamos la función seed().
-seed()
+    await vendedorRepo.save(vendedor);
 
-  // .catch() se ejecuta solamente si ocurre algún error
-  // mientras se está ejecutando seed().
-  //
-  // Por ejemplo:
-  // - PostgreSQL está apagado
-  // - la contraseña de la base está mal
-  // - no existe la base de datos
-  // - ocurre un error al intentar insertar un dato
-  //
-  // "error: unknown" significa que TypeScript no sabe
-  // exactamente qué tipo de error puede llegar a ocurrir.
-  .catch((error: unknown) => {
+    console.log("✅ Vendedor creado");
 
-    // Muestra el error en la terminal para que podamos
-    // ver qué salió mal.
+    // =====================================================
+    // INMOBILIARIA
+    // =====================================================
+
+    const inmobiliaria = inmobiliariaRepo.create({
+      nombre: "Costa Propiedades Seed",
+      descripcion: "Inmobiliaria de prueba del TPO",
+      urlLogo: null,
+      telefonoContacto: "2255123456",
+      emailContacto: "contacto@costapropiedades.com",
+      direccionOficina: "Avenida 3 1234, Villa Gesell",
+
+      // Relacionamos la inmobiliaria con el vendedor
+      vendedor,
+    });
+
+    await inmobiliariaRepo.save(inmobiliaria);
+
+    console.log("✅ Inmobiliaria creada");
+
+    // =====================================================
+    // PROPIEDAD 1
+    // =====================================================
+
+    const propiedad1 = propiedadRepo.create({
+      titulo: "Departamento con vista al mar",
+
+      descripcion:
+        "Departamento luminoso ubicado cerca de la playa.",
+
+      tipo: TipoPropiedad.DEPARTAMENTO,
+
+      operacion: TipoOperacion.VENTA,
+
+      // IMPORTANTE:
+      // En tu Entity precio es string porque PostgreSQL usa DECIMAL.
+      precio: "95000.00",
+
+      moneda: "USD",
+
+      direccion: "Avenida 1 850",
+
+      zona: "Centro",
+
+      superficieCubiertaM2: "65.00",
+
+      superficieTotalM2: "70.00",
+
+      ambientes: 3,
+
+      dormitorios: 2,
+
+      banios: 1,
+
+      antiguedadAnios: 8,
+
+      tags: [
+        "balcon",
+        "cochera",
+        "vista al mar",
+      ],
+
+      estado: EstadoPropiedad.BORRADOR,
+
+      inmobiliaria,
+    });
+
+    // =====================================================
+    // PROPIEDAD 2
+    // =====================================================
+
+    const propiedad2 = propiedadRepo.create({
+      titulo: "Casa con pileta",
+
+      descripcion:
+        "Casa amplia con jardín, pileta y cochera.",
+
+      tipo: TipoPropiedad.CASA,
+
+      operacion: TipoOperacion.VENTA,
+
+      precio: "180000.00",
+
+      moneda: "USD",
+
+      direccion: "Paseo 120 450",
+
+      zona: "Sur",
+
+      superficieCubiertaM2: "140.00",
+
+      superficieTotalM2: "350.00",
+
+      ambientes: 5,
+
+      dormitorios: 3,
+
+      banios: 2,
+
+      antiguedadAnios: 10,
+
+      tags: [
+        "pileta",
+        "jardin",
+        "cochera",
+      ],
+
+      estado: EstadoPropiedad.BORRADOR,
+
+      inmobiliaria,
+    });
+
+    // =====================================================
+    // PROPIEDAD 3
+    // =====================================================
+
+    const propiedad3 = propiedadRepo.create({
+      titulo: "Local comercial céntrico",
+
+      descripcion:
+        "Local comercial con excelente ubicación.",
+
+      tipo: TipoPropiedad.LOCAL,
+
+      operacion: TipoOperacion.ALQUILER,
+
+      precio: "850000.00",
+
+      moneda: "ARS",
+
+      direccion: "Avenida 3 700",
+
+      zona: "Centro",
+
+      superficieCubiertaM2: "55.00",
+
+      superficieTotalM2: "55.00",
+
+      ambientes: 2,
+
+      dormitorios: null,
+
+      banios: 1,
+
+      antiguedadAnios: 5,
+
+      tags: [
+        "vidriera",
+        "centro",
+      ],
+
+      estado: EstadoPropiedad.BORRADOR,
+
+      inmobiliaria,
+    });
+
+    // =====================================================
+    // PROPIEDAD 4 - TERRENO
+    // =====================================================
+
+    const propiedad4 = propiedadRepo.create({
+      titulo: "Terreno en Mar Azul",
+
+      descripcion:
+        "Terreno amplio ideal para construcción.",
+
+      tipo: TipoPropiedad.TERRENO,
+
+      operacion: TipoOperacion.VENTA,
+
+      precio: "45000.00",
+
+      moneda: "USD",
+
+      direccion: "Calle 40 500",
+
+      zona: "Mar Azul",
+
+      // En un terreno puede no haber superficie cubierta
+      superficieCubiertaM2: null,
+
+      superficieTotalM2: "500.00",
+
+      ambientes: null,
+
+      dormitorios: null,
+
+      banios: null,
+
+      antiguedadAnios: null,
+
+      tags: [],
+
+      estado: EstadoPropiedad.BORRADOR,
+
+      inmobiliaria,
+    });
+
+    // =====================================================
+    // GUARDAMOS LAS PROPIEDADES
+    // =====================================================
+
+    await propiedadRepo.save([
+      propiedad1,
+      propiedad2,
+      propiedad3,
+      propiedad4,
+    ]);
+
+    console.log("✅ 4 propiedades creadas");
+
+    console.log("");
+    console.log("=================================");
+    console.log("🎉 SEED CARGADO CORRECTAMENTE");
+    console.log("=================================");
+    console.log("Email: ana.seed@tpo.com");
+    console.log("Contraseña: 123456");
+    console.log("Propiedades: 4");
+    console.log("=================================");
+
+  } catch (error) {
+    console.error("❌ ERROR AL EJECUTAR EL SEED");
     console.error(error);
 
-    // Indica que el programa terminó con un error.
-    //
-    // El código 1 significa que la ejecución
-    // no terminó correctamente.
     process.exitCode = 1;
-  });
+
+  } finally {
+
+    if (AppDataSource.isInitialized) {
+      await AppDataSource.destroy();
+    }
+  }
+}
+
+seed();

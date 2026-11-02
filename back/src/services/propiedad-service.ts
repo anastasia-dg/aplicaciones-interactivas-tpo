@@ -319,23 +319,23 @@ class PropiedadService {
         await fotoPropiedadRepository.buscarPorPropiedad(id);
 
     // REGLA: una propiedad publicada tiene que tener al menos una foto.
-    if (fotos.length === 0) {
-        throw new Error(
-        "La propiedad debe tener al menos una foto para ser publicada"
-        );
-    }
+    //if (fotos.length === 0) {
+        //throw new Error(
+        //"La propiedad debe tener al menos una foto para ser publicada"
+        //);
+    //}
 
     // Buscamos las fotos marcadas como portada.
-    const portadas = fotos.filter( //filter() recorre y se queda con esPortada === true
-        (foto) => foto.esPortada
-    );
+    //const portadas = fotos.filter( //filter() recorre y se queda con esPortada === true
+       // (foto) => foto.esPortada
+    //);
 
     // REGLA: tiene que existir una sola portada.
-    if (portadas.length !== 1) {
+    /*if (portadas.length !== 1) {
         throw new Error(
         "La propiedad debe tener exactamente una foto de portada"
         );
-    }
+    }*/
     }
 
     propiedad.estado = nuevoEstado;
