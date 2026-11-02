@@ -68,6 +68,41 @@ export const actividadController = {
     }
   },
 
+  
+  // DEVOLVER LA CANTIDAD DE ACTIVIDADES SIN LEER
+  async contarNoLeidas(req: Request, res: Response) {
+    try {
+
+      // Obtenemos el ID de la inmobiliaria desde la URL
+      const inmobiliariaId = Number(req.params.inmobiliariaId);
+
+      // Comprobamos que sea un número entero positivo
+      if (!Number.isInteger(inmobiliariaId) || inmobiliariaId <= 0) {
+        res.status(400).json({
+          message: "El ID debe ser un número entero positivo",
+        });
+        return;
+      }
+
+      // Consultamos al Service
+      const cantidad = await actividadService.contarNoLeidas(
+        inmobiliariaId
+      );
+
+      // Respondemos con un JSON
+      res.status(200).json({
+        cantidad,
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error
+          ? error.message
+          : "Error al contar actividades sin leer",
+      });
+    }
+  },
+
 
   async marcarComoLeida(req: Request, res: Response) {
     try {

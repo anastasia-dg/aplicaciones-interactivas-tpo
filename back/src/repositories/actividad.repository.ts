@@ -47,6 +47,25 @@ class ActividadRepository {
     });
  }
 
+ 
+  // CONTAR ACTIVIDADES SIN LEER DE UNA INMOBILIARIA
+  contarNoLeidas(inmobiliariaId: number): Promise<number> {
+
+    // count() cuenta los registros que cumplen las condiciones
+    return this.repository.count({
+      where: {
+        // Solo contamos las actividades de esta inmobiliaria
+        inmobiliaria: {
+          id: inmobiliariaId,
+        },
+
+        // Solo contamos las que todavía no fueron leídas
+        leida: false,
+      },
+    });
+  }
+
+
   // Recibe los datos necesarios para crear una nueva actividad.
   crear(datos: Partial<Actividad>): Promise<Actividad> {
 

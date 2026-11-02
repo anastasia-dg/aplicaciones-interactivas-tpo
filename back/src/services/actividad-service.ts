@@ -31,6 +31,16 @@ class ActividadService {
     return actividadRepository.buscarPorInmobiliaria(inmobiliariaId);
   }
 
+  
+  // CONTAR ACTIVIDADES SIN LEER
+  contarNoLeidas(inmobiliariaId: number): Promise<number> {
+
+    // Le pedimos al Repository que cuente
+    // las actividades sin leer de esta inmobiliaria.
+    return actividadRepository.contarNoLeidas(inmobiliariaId);
+  }
+
+
   //CREAR UNA ACTIVIDAD (SE TIENE QUE CREAR AUTOMATICAMENTE)
   async crear(datos: Partial<Actividad>): Promise<Actividad> {
     return actividadRepository.crear(datos);

@@ -3,6 +3,14 @@ import { actividadController } from "../controllers/actividad.controller";
 
 export const actividadRouter = Router();
 
+
+// GET /actividades/inmobiliaria/:inmobiliariaId/no-leidas
+actividadRouter.get(
+  "/inmobiliaria/:inmobiliariaId/no-leidas",
+  actividadController.contarNoLeidas
+);
+
+
 // GET /actividades
 actividadRouter.get("/", actividadController.listar);
 
