@@ -1,5 +1,6 @@
 import { fotoPropiedadRepository } from "../repositories/foto-propiedad.repository";
 import { FotoPropiedad } from "../entities/foto-propiedad.entity";
+import { EstadoPropiedad } from "../entities/enums";
 import { propiedadRepository } from "../repositories/propiedad.repository";
 import {
   CrearFotoPropiedadDto,
@@ -40,44 +41,94 @@ class FotoPropiedadService {
     return fotoPropiedadRepository.buscarPorPropiedad(propiedadId);
   }
 
+  
+  // Deja todas las fotos de una propiedad sin portada,
+  // excepto la foto que queremos conservar (si la hay)
+  private async quitarPortadas(
+    propiedadId: number,
+    fotoExceptuadaId?: number
+  ): Promise<void> {
+
+    // Buscamos todas las fotos de la propiedad.
+    const fotos = await fotoPropiedadRepository.buscarPorPropiedad(
+      propiedadId
+    );
+
+    // Recorremos las fotos.
+    for (const foto of fotos) {
+
+      // Si esta foto ya es portada y no es la exceptuada,
+      // le quitamos la marca de portada.
+      if (foto.esPortada && foto.id !== fotoExceptuadaId) {
+        foto.esPortada = false;
+
+        // Guardamos el cambio en PostgreSQL.
+        await fotoPropiedadRepository.actualizar(foto);
+      }
+    }
+  }
+
 
   // CREAR FOTO
-    async crear(propiedadId: number, datos: CrearFotoPropiedadDto): Promise<FotoPropiedad> {
+  async crear(
+    propiedadId: number,
+    datos: CrearFotoPropiedadDto
+  ): Promise<FotoPropiedad> {
 
-    // Buscamos la propiedad a la que queremos agregarle la foto.
-    const propiedad =
-        await propiedadRepository.buscarPorId(propiedadId);
+    // Comprobamos que la propiedad exista.
+    const propiedad = await propiedadRepository.buscarPorId(propiedadId);
 
-    // Si la propiedad no existe, no podemos agregarle una foto.
     if (!propiedad) {
-        throw new Error("Propiedad no encontrada");
+      throw new Error("Propiedad no encontrada");
     }
 
-    // Creamos la foto con los datos validados por el DTO y la relacionamos con la propiedad.
+    // Si la nueva foto será portada, quitamos las portadas anteriores.
+    if (datos.esPortada === true) {
+      await this.quitarPortadas(propiedadId);
+    }
+
+    // Guardamos la nueva foto.
     return fotoPropiedadRepository.crear({
-        url: datos.url,
-        orden: datos.orden,
-        // Si no mandaron esPortada, queda false.
-        esPortada: datos.esPortada ?? false,
-        propiedad: propiedad,
+      url: datos.url,
+      orden: datos.orden,
+      esPortada: datos.esPortada ?? false,
+      propiedad,
     });
- }
+  }
+
 
 
   //ACTUALIZAR FOTO
-  async actualizar( id: number, datos: ActualizarFotoPropiedadDto): Promise<FotoPropiedad> {
+  async actualizar(
+    id: number,
+    datos: ActualizarFotoPropiedadDto
+  ): Promise<FotoPropiedad> {
 
-    // Primero comprobamos que la foto realmente exista.
-    // Usamos this.buscarPorId() porque ese método ya tiene
-    // la lógica de lanzar un error si no la encuentra.
+    // Buscamos la foto que queremos modificar.
     const foto = await this.buscarPorId(id);
 
-    // Copiamos sobre la foto existente solamente
-    // los datos que queremos modificar.
+    // Si queremos convertirla en portada,
+    // quitamos la marca de las demás fotos.
+    if (datos.esPortada === true) {
+      await this.quitarPortadas(foto.propiedad.id, foto.id);
+    }
+
+    // Si queremos quitarle la portada a una foto publicada,
+    // primero comprobamos que no deje la propiedad sin portada.
+    if (
+      datos.esPortada === false &&
+      foto.esPortada &&
+      foto.propiedad.estado === EstadoPropiedad.PUBLICADA
+    ) {
+      throw new Error(
+        "Una propiedad publicada debe conservar una foto de portada"
+      );
+    }
+
+    // Aplicamos los cambios recibidos.
     Object.assign(foto, datos);
 
-    // Le pedimos al Repository que guarde
-    // la foto modificada.
+    // Guardamos la foto actualizada.
     return fotoPropiedadRepository.actualizar(foto);
   }
 
@@ -85,15 +136,24 @@ class FotoPropiedadService {
   // ELIMINAR FOTO
   async eliminar(id: number): Promise<void> {
 
-    // Primero verificamos que exista
-    await this.buscarPorId(id);
+    // Comprobamos que la foto exista.
+    const foto = await this.buscarPorId(id);
 
-    // Si llegamos hasta acá significa que sí existe
-    // entonces podemos eliminarla.
+    // No dejamos eliminar la portada de una propiedad publicada.
+    if (
+      foto.esPortada &&
+      foto.propiedad.estado === EstadoPropiedad.PUBLICADA
+    ) {
+      throw new Error(
+        "No se puede eliminar la portada de una propiedad publicada"
+      );
+    }
+
+    // Si pasó la validación, eliminamos la foto.
     await fotoPropiedadRepository.eliminar(id);
   }
-}
 
+}
 // Creamos una instancia
 export const fotoPropiedadService =
   new FotoPropiedadService();
