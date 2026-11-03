@@ -4,6 +4,7 @@ import {
   crearFotoPropiedadSchema,
   actualizarFotoPropiedadSchema,
 } from "../dtos/foto-propiedad-dto";
+import { propiedadService } from "../services/propiedad-service";
 
 export const fotoPropiedadController = {
 
@@ -83,6 +84,14 @@ export const fotoPropiedadController = {
           message: "El ID de propiedad debe ser un número",
         });
       }
+      
+      // Comprobamos que el vendedor autenticado
+      // sea dueño de la propiedad donde agregará la foto.
+      await propiedadService.verificarPropietario(
+        propiedadId,
+        req.vendedorId!
+      );
+
 
       // Validamos los datos de la foto con el DTO.
       const datos =
@@ -99,6 +108,18 @@ export const fotoPropiedadController = {
       return res.status(201).json(foto);
 
     } catch (error) {
+      
+      // El vendedor inició sesión,
+      // pero no es dueño de la propiedad.
+      if (
+        error instanceof Error &&
+        error.message ===
+          "No tenés permiso para modificar esta propiedad"
+      ) {
+        return res.status(403).json({
+          message: error.message,
+        });
+      }
 
       return res.status(400).json({
         message: error instanceof Error
@@ -118,6 +139,16 @@ export const fotoPropiedadController = {
         });
       }
 
+      // Primero buscamos la foto para conocer su propiedad.
+      const fotoActual = await fotoPropiedadService.buscarPorId(id);
+
+      // Verificamos que la propiedad pertenezca al vendedor.
+      await propiedadService.verificarPropietario(
+        fotoActual.propiedad.id,
+        req.vendedorId!
+      );
+
+
       const datos =
         actualizarFotoPropiedadSchema.parse(req.body);
 
@@ -126,6 +157,19 @@ export const fotoPropiedadController = {
 
       res.status(200).json(foto);
     } catch (error) {
+      
+      // El vendedor inició sesión,
+      // pero no es dueño de la propiedad.
+      if (
+        error instanceof Error &&
+        error.message ===
+          "No tenés permiso para modificar esta propiedad"
+      ) {
+        return res.status(403).json({
+          message: error.message,
+        });
+      }
+
       res.status(400).json({
         message: error instanceof Error
           ? error.message
@@ -144,11 +188,34 @@ export const fotoPropiedadController = {
           message: "El ID debe ser un número",
         });
       }
+      
+      // Buscamos la foto que quieren eliminar.
+      const fotoActual = await fotoPropiedadService.buscarPorId(id);
+
+      // Comprobamos que pertenezca al vendedor autenticado.
+      await propiedadService.verificarPropietario(
+        fotoActual.propiedad.id,
+        req.vendedorId!
+      );
+
 
       await fotoPropiedadService.eliminar(id);
 
       res.status(204).send();
     } catch (error) {
+      
+      // El vendedor inició sesión,
+      // pero no es dueño de la propiedad.
+      if (
+        error instanceof Error &&
+        error.message ===
+          "No tenés permiso para modificar esta propiedad"
+      ) {
+        return res.status(403).json({
+          message: error.message,
+        });
+      }
+
       res.status(404).json({
         message: error instanceof Error
           ? error.message

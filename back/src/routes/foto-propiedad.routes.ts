@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { fotoPropiedadController } from "../controllers/foto-propiedad.controller";
+import { verificarToken } from "../middlewares/auth.middleware";
 
 export const fotoPropiedadRouter = Router();
 
@@ -16,8 +17,10 @@ fotoPropiedadRouter.get(
 );
 
 // POST /fotos-propiedad/propiedad/:propiedadId
+// Crear una foto: requiere iniciar sesión.
 fotoPropiedadRouter.post(
   "/propiedad/:propiedadId",
+  verificarToken,
   fotoPropiedadController.crear
 );
 
@@ -28,13 +31,16 @@ fotoPropiedadRouter.get(
 );
 
 // PUT/PATCH /fotos-propiedad/:id
+// Modificar una foto: requiere iniciar sesión.
 fotoPropiedadRouter.patch(
   "/:id",
+  verificarToken,
   fotoPropiedadController.actualizar
 );
 
 // DELETE /fotos-propiedad/:id
 fotoPropiedadRouter.delete(
   "/:id",
+  verificarToken,
   fotoPropiedadController.eliminar
 );
