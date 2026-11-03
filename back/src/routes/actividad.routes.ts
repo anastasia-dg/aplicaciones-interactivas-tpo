@@ -1,38 +1,46 @@
 import { Router } from "express";
 import { actividadController } from "../controllers/actividad.controller";
+import { verificarToken } from "../middlewares/auth.middleware";
 
 export const actividadRouter = Router();
 
+// Todas las rutas de actividades requieren iniciar sesión.
+actividadRouter.use(verificarToken);
 
-// GET /actividades/inmobiliaria/:inmobiliariaId/no-leidas
+
+// GET /actividades
+// Lista solamente las actividades del vendedor autenticado.
+actividadRouter.get(
+  "/",
+  actividadController.listar
+);
+
+
+// Cantidad de actividades sin leer.
 actividadRouter.get(
   "/inmobiliaria/:inmobiliariaId/no-leidas",
   actividadController.contarNoLeidas
 );
 
-
-// GET /actividades
-actividadRouter.get("/", actividadController.listar);
-
-// GET /actividades/inmobiliaria/:inmobiliariaId
+// Listar actividades de una inmobiliaria.
 actividadRouter.get(
   "/inmobiliaria/:inmobiliariaId",
   actividadController.buscarPorInmobiliaria
 );
 
-// GET /actividades/:id
+// Buscar una actividad por ID.
 actividadRouter.get(
   "/:id",
   actividadController.buscarPorId
 );
 
-// PATCH /actividades/:id/leida
+// Marcar una actividad como leída.
 actividadRouter.patch(
   "/:id/leida",
   actividadController.marcarComoLeida
 );
 
-// DELETE /actividades/:id
+// Eliminar una actividad.
 actividadRouter.delete(
   "/:id",
   actividadController.eliminar

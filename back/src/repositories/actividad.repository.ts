@@ -10,13 +10,30 @@ class ActividadRepository {
     return AppDataSource.getRepository(Actividad);
   }
 
-  // Busca TODAS las actividades.
-  // También trae la inmobiliaria relacionada con cada actividad.
-  listar(): Promise<Actividad[]> {
+  
+  // Lista solamente las actividades del vendedor autenticado.
+  listar(vendedorId: number): Promise<Actividad[]> {
     return this.repository.find({
+
+      // Filtramos por el dueño de la inmobiliaria.
+      where: {
+        inmobiliaria: {
+          vendedor: {
+            id: vendedorId,
+          },
+        },
+      },
+
+      // Traemos los datos de la inmobiliaria.
       relations: ["inmobiliaria"],
+
+      // Mostramos primero las actividades más recientes.
+      order: {
+        fechaCreacion: "DESC",
+      },
     });
   }
+
 
   // Busca UNA actividad según su ID.
   buscarPorId(id: number): Promise<Actividad | null> {

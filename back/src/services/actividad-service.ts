@@ -4,10 +4,14 @@ import { Actividad } from "../entities/actividad.entity";
 
 class ActividadService {
 
-  // Devuelve todas las actividades guardadas.
-  listar(): Promise<Actividad[]> {
-    return actividadRepository.listar();
+ 
+  // Devuelve las actividades del vendedor autenticado.
+  listar(vendedorId: number): Promise<Actividad[]> {
+
+    // El Repository filtra por vendedor.
+    return actividadRepository.listar(vendedorId);
   }
+
 
 
   //BUSCAR UNA ACTIVIDAD POR ID
