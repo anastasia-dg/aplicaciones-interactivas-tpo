@@ -77,10 +77,18 @@ export const inmobiliariaController = {
   },
 
 
-
   async crear(req: Request, res: Response) {
     try {
       const datos = crearInmobiliariaSchema.parse(req.body);
+
+    
+      // El vendedor que figura en los datos
+      // debe ser el mismo que inició sesión.
+      if (datos.vendedorId !== req.vendedorId) {
+        return res.status(403).json({
+          message: "No podés crear una inmobiliaria para otro vendedor",
+        });
+      }
 
       const inmobiliaria =
         await inmobiliariaService.crear(datos);
@@ -106,6 +114,12 @@ export const inmobiliariaController = {
         });
       }
 
+      // Comprobamos que el vendedor sea dueño de la inmobiliaria.
+      await inmobiliariaService.verificarPropietario(
+        id,
+        req.vendedorId!
+      );
+
       const datos =
         actualizarInmobiliariaSchema.parse(req.body);
 
@@ -114,6 +128,18 @@ export const inmobiliariaController = {
 
       res.status(200).json(inmobiliaria);
     } catch (error) {
+      // El vendedor inició sesión,
+      // pero no es dueño de esta inmobiliaria.
+      if (
+        error instanceof Error &&
+        error.message ===
+          "No tenés permiso para modificar esta inmobiliaria"
+      ) {
+        return res.status(403).json({
+          message: error.message,
+        });
+      }
+
       res.status(400).json({
         message: error instanceof Error
           ? error.message
@@ -133,10 +159,29 @@ export const inmobiliariaController = {
         });
       }
 
+      // Comprobamos que la inmobiliaria pertenezca
+      // al vendedor autenticado.
+      await inmobiliariaService.verificarPropietario(
+        id,
+        req.vendedorId!
+      );
+
       await inmobiliariaService.eliminar(id);
 
       res.status(204).send();
     } catch (error) {
+      // El vendedor inició sesión,
+      // pero no es dueño de esta inmobiliaria.
+      if (
+        error instanceof Error &&
+        error.message ===
+          "No tenés permiso para modificar esta inmobiliaria"
+      ) {
+        return res.status(403).json({
+          message: error.message,
+        });
+      }
+
       res.status(400).json({
         message: error instanceof Error
           ? error.message

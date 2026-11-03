@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { inmobiliariaController } from "../controllers/inmobiliaria.controller";
+import { verificarToken } from "../middlewares/auth.middleware";
 
 export const inmobiliariaRouter = Router();
 
@@ -9,12 +10,6 @@ inmobiliariaRouter.get(
   inmobiliariaController.listar
 );
 
-// POST /inmobiliarias
-inmobiliariaRouter.post(
-  "/",
-  inmobiliariaController.crear
-);
-
 // GET /inmobiliarias/:id
 inmobiliariaRouter.get(
   "/:id",
@@ -22,22 +17,33 @@ inmobiliariaRouter.get(
 );
 
 
-  // GET /inmobiliarias/:id/perfil
-  // Muestra los datos públicos de una inmobiliaria
-  inmobiliariaRouter.get(
-    "/:id/perfil",
-    inmobiliariaController.buscarPerfilPublico
-  );
+// GET /inmobiliarias/:id/perfil
+// Muestra los datos públicos de una inmobiliaria
+inmobiliariaRouter.get(
+  "/:id/perfil",
+  inmobiliariaController.buscarPerfilPublico
+);
 
+//POST /inmobiliarias
+// Crear inmobiliaria: requiere iniciar sesión.
+inmobiliariaRouter.post(
+  "/",
+  verificarToken,
+  inmobiliariaController.crear
+);
 
-// PATCH /inmobiliarias/:id
+//PATCH /inmobiliarias/:id
+// Modificar inmobiliaria: requiere iniciar sesión.
 inmobiliariaRouter.patch(
   "/:id",
+  verificarToken,
   inmobiliariaController.actualizar
 );
 
-// DELETE /inmobiliarias/:id
+//DELETE /inmobiliarias/:id
+// Eliminar inmobiliaria: requiere iniciar sesión.
 inmobiliariaRouter.delete(
   "/:id",
+  verificarToken,
   inmobiliariaController.eliminar
 );

@@ -38,6 +38,26 @@ class InmobiliariaService {
   }
 
   
+  // VERIFICAR QUE LA INMOBILIARIA PERTENEZCA AL VENDEDOR
+  async verificarPropietario(
+    inmobiliariaId: number,
+    vendedorId: number
+  ): Promise<void> {
+
+    // Buscamos la inmobiliaria en la base de datos.
+    const inmobiliaria = await this.buscarPorId(inmobiliariaId);
+
+    // Comparamos el dueño de la inmobiliaria
+    // con el vendedor que inició sesión.
+    if (inmobiliaria.vendedor.id !== vendedorId) {
+      throw new Error(
+        "No tenés permiso para modificar esta inmobiliaria"
+      );
+    }
+  }
+
+
+  
   // OBTENER EL PERFIL PUBLICO DE UNA INMOBILIARIA
   async buscarPerfilPublico(id: number): Promise<Inmobiliaria> {
 
