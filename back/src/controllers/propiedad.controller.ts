@@ -6,6 +6,7 @@ import {
   listarPropiedadesSchema,
 } from "../dtos/propiedad-dto";
 import { propiedadService } from "../services/propiedad-service";
+import { inmobiliariaService } from "../services/inmobiliaria-service";
 
 
 class PropiedadController {
@@ -113,6 +114,18 @@ class PropiedadController {
       // Acá tenemos los datos ya validados por Zod.
       const datos = resultado.data;
 
+      // Buscamos la inmobiliaria indicada en el formulario.
+      const inmobiliaria =
+        await inmobiliariaService.buscarPorId(datos.inmobiliariaId);
+
+      // Comprobamos que pertenezca al vendedor autenticado.
+      if (inmobiliaria.vendedor.id !== request.vendedorId) {
+        return response.status(403).json({
+          mensaje: "No tenés permiso para crear propiedades en esta inmobiliaria",
+        });
+      }
+
+
       // Mandamos directamente los datos al Service.
       const propiedad = await propiedadService.crear(datos);
 
@@ -142,6 +155,14 @@ class PropiedadController {
           mensaje: "El ID de la propiedad no es válido",
         });
       }
+
+      // El middleware ya verificó el token.
+      // Comprobamos que el vendedor sea dueño de la propiedad.
+      await propiedadService.verificarPropietario(
+        id,
+        request.vendedorId!
+      );
+
 
       // Validamos el body con el DTO de actualización.
       const resultado = actualizarPropiedadSchema.safeParse(
@@ -195,6 +216,19 @@ class PropiedadController {
         });
       }
 
+      // El vendedor está autenticado,
+      // pero la propiedad no le pertenece.
+      if (
+        error instanceof Error &&
+        error.message ===
+          "No tenés permiso para modificar esta propiedad"
+      ) {
+        return response.status(403).json({
+          mensaje: error.message,
+        });
+      }
+
+
       console.error(error);
 
       return response.status(500).json({
@@ -216,6 +250,14 @@ class PropiedadController {
           mensaje: "El ID de la propiedad no es válido",
         });
       }
+      
+      // El middleware ya verificó el token.
+      // Comprobamos que el vendedor sea dueño de la propiedad.
+      await propiedadService.verificarPropietario(
+        id,
+        request.vendedorId!
+      );
+
 
       // Sacamos el nuevo estado del body
       // Validamos el body con el DTO de cambio de estado.
@@ -280,6 +322,19 @@ class PropiedadController {
         });
       }
 
+      // El vendedor está autenticado,
+      // pero la propiedad no le pertenece.
+      if (
+        error instanceof Error &&
+        error.message ===
+          "No tenés permiso para modificar esta propiedad"
+      ) {
+        return response.status(403).json({
+          mensaje: error.message,
+        });
+      }
+
+
       console.error(error);
 
       return response.status(500).json({
@@ -301,6 +356,14 @@ class PropiedadController {
           mensaje: "El ID de la propiedad no es válido",
         });
       }
+      
+      // El middleware ya verificó el token.
+      // Comprobamos que el vendedor sea dueño de la propiedad.
+      await propiedadService.verificarPropietario(
+        id,
+        request.vendedorId!
+      );
+
 
       // El Service controla si realmente
       // se puede eliminar la propiedad.
@@ -336,6 +399,19 @@ class PropiedadController {
           mensaje: error.message,
         });
       }
+
+      // El vendedor está autenticado,
+      // pero la propiedad no le pertenece.
+      if (
+        error instanceof Error &&
+        error.message ===
+          "No tenés permiso para modificar esta propiedad"
+      ) {
+        return response.status(403).json({
+          mensaje: error.message,
+        });
+      }
+
 
       console.error(error);
 

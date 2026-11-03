@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { vendedorRepository } from "../repositories/vendedor.repository";
+import jwt from "jsonwebtoken";
 
 class LoginService {
 
@@ -27,8 +28,35 @@ class LoginService {
       throw new Error("Credenciales incorrectas");
     }
 
-    //Si todo es correcto, volvemos a consultar al vendedor normalmente, sin traer su contraseña.
-    return vendedorRepository.buscarPorId(vendedor.id);
+    
+    // Buscamos los datos del vendedor sin su contraseña.
+    const vendedorSinContrasena =
+      await vendedorRepository.buscarPorId(vendedor.id);
+
+    // Comprobamos que exista la clave secreta del JWT.
+    const claveSecreta = process.env.JWT_SECRET;
+
+    if (!claveSecreta) {
+      throw new Error("Falta configurar JWT_SECRET");
+    }
+
+    // Creamos un token que identifica al vendedor.
+    const token = jwt.sign(
+      {
+        vendedorId: vendedor.id, // ID del vendedor autenticado.
+      },
+      claveSecreta, // Clave utilizada para firmar el token.
+      {
+        expiresIn: "2h", // El token vence después de 2 horas.
+      }
+    );
+
+    // Devolvemos los datos del vendedor y su token.
+    return {
+      vendedor: vendedorSinContrasena,
+      token: token,
+    };
+
   }
 }
 

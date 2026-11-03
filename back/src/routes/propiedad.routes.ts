@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { propiedadController } from "../controllers/propiedad.controller";
+import { verificarToken } from "../middlewares/auth.middleware";
 
 export const propiedadRouter = Router();
 
@@ -24,17 +25,20 @@ propiedadRouter.get(
 // PATCH /propiedades/:id
 propiedadRouter.patch(
   "/:id",
+  verificarToken,
   propiedadController.actualizar
 );
 
 // PATCH /propiedades/:id/estado
 propiedadRouter.patch(
   "/:id/estado",
+  verificarToken,
   propiedadController.cambiarEstado
 );
 
 // DELETE /propiedades/:id
 propiedadRouter.delete(
   "/:id",
+  verificarToken,
   propiedadController.eliminar
 );

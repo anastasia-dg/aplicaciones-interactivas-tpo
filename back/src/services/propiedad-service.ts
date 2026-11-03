@@ -68,6 +68,31 @@ class PropiedadService {
     return propiedad;
   }
 
+  
+  // COMPROBAR QUE LA PROPIEDAD PERTENEZCA AL VENDEDOR
+  async verificarPropietario(
+    propiedadId: number,
+    vendedorId: number
+  ): Promise<void> {
+
+    // Buscamos la propiedad que quieren modificar
+    const propiedad = await this.buscarPorId(propiedadId);
+
+    // Cada propiedad pertenece a una inmobiliaria
+    // Buscamos los datos completos de esa inmobiliaria
+    const inmobiliaria = await inmobiliariaService.buscarPorId(
+      propiedad.inmobiliaria.id
+    );
+
+    // Comparamos el vendedor dueño con el vendedor autenticado
+    if (inmobiliaria.vendedor.id !== vendedorId) {
+      throw new Error(
+        "No tenés permiso para modificar esta propiedad"
+      );
+    }
+  }
+
+
 
   // CREAR UNA PROPIEDAD
   async crear(datos: CrearPropiedadDto): Promise<Propiedad> {
