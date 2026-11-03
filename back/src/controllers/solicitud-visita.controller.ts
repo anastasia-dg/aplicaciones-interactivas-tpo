@@ -4,23 +4,33 @@ import {
   crearSolicitudVisitaSchema,
   cambiarEstadoSolicitudVisitaSchema,
 } from "../dtos/solicitud-visita-dto";
+import { propiedadService } from "../services/propiedad-service";
 
 export const solicitudVisitaController = {
 
+  
   async listar(req: Request, res: Response) {
     try {
-      const solicitudes =
-        await solicitudVisitaService.listar();
 
-      res.status(200).json(solicitudes);
+      // El middleware verificarToken ya identificó al vendedor.
+      const vendedorId = req.vendedorId!;
+
+      // Buscamos solamente sus solicitudes.
+      const solicitudes =
+        await solicitudVisitaService.listar(vendedorId);
+
+      // Devolvemos las solicitudes encontradas.
+      return res.status(200).json(solicitudes);
+
     } catch (error) {
-      res.status(500).json({
-        message: error instanceof Error
-          ? error.message
-          : "Error al listar solicitudes",
+
+      // Si ocurre un error inesperado.
+      return res.status(500).json({
+        message: "Error al listar solicitudes",
       });
     }
   },
+
 
 
   async buscarPorId(req: Request, res: Response) {
@@ -33,11 +43,33 @@ export const solicitudVisitaController = {
         });
       }
 
+      // Buscamos la solicitud para saber a qué propiedad pertenece.
+      const solicitudActual =
+        await solicitudVisitaService.buscarPorId(id);
+
+      // Comprobamos que la propiedad pertenezca
+      // al vendedor que inició sesión.
+      await propiedadService.verificarPropietario(
+        solicitudActual.propiedad.id,
+        req.vendedorId!
+      );
+
       const solicitud =
         await solicitudVisitaService.buscarPorId(id);
 
       res.status(200).json(solicitud);
     } catch (error) {
+      
+      if (
+        error instanceof Error &&
+        error.message ===
+        "No tenés permiso para modificar esta propiedad"
+      ) {
+        return res.status(403).json({
+          message: "No tenés permiso para acceder a estas solicitudes",
+        });
+      }
+
       res.status(404).json({
         message: error instanceof Error
           ? error.message
@@ -58,6 +90,12 @@ export const solicitudVisitaController = {
         });
       }
 
+      // Verificamos que el vendedor sea dueño de la propiedad.
+      await propiedadService.verificarPropietario(
+        propiedadId,
+        req.vendedorId!
+      );
+
       const solicitudes =
         await solicitudVisitaService.buscarPorPropiedad(
           propiedadId
@@ -65,6 +103,17 @@ export const solicitudVisitaController = {
 
       res.status(200).json(solicitudes);
     } catch (error) {
+      
+      if (
+        error instanceof Error &&
+        error.message ===
+        "No tenés permiso para modificar esta propiedad"
+      ) {
+        return res.status(403).json({
+          message: "No tenés permiso para acceder a estas solicitudes",
+        });
+      }
+
       res.status(500).json({
         message: error instanceof Error
           ? error.message
@@ -96,6 +145,17 @@ export const solicitudVisitaController = {
 
       res.status(201).json(solicitud);
     } catch (error) {
+      
+      if (
+        error instanceof Error &&
+        error.message ===
+        "No tenés permiso para modificar esta propiedad"
+      ) {
+        return res.status(403).json({
+          message: "No tenés permiso para acceder a estas solicitudes",
+        });
+      }
+
       res.status(400).json({
         message: error instanceof Error
           ? error.message
@@ -115,6 +175,17 @@ export const solicitudVisitaController = {
         });
       }
 
+      // Buscamos la solicitud para saber a qué propiedad pertenece.
+      const solicitudActual =
+        await solicitudVisitaService.buscarPorId(id);
+
+      // Comprobamos que la propiedad pertenezca
+      // al vendedor que inició sesión.
+      await propiedadService.verificarPropietario(
+        solicitudActual.propiedad.id,
+        req.vendedorId!
+      );
+
       // Validamos el body con el DTO
       const datos =
           cambiarEstadoSolicitudVisitaSchema.parse(req.body);
@@ -127,6 +198,17 @@ export const solicitudVisitaController = {
 
       res.status(200).json(solicitud);
     } catch (error) {
+      
+      if (
+        error instanceof Error &&
+        error.message ===
+        "No tenés permiso para modificar esta propiedad"
+      ) {
+        return res.status(403).json({
+          message: "No tenés permiso para acceder a estas solicitudes",
+        });
+      }
+
       res.status(400).json({
         message: error instanceof Error
           ? error.message
@@ -145,11 +227,33 @@ export const solicitudVisitaController = {
           message: "El ID debe ser un número",
         });
       }
+      
+      // Buscamos la solicitud para saber a qué propiedad pertenece.
+      const solicitudActual =
+        await solicitudVisitaService.buscarPorId(id);
+
+      // Comprobamos que la propiedad pertenezca
+      // al vendedor que inició sesión.
+      await propiedadService.verificarPropietario(
+        solicitudActual.propiedad.id,
+        req.vendedorId!
+      );
 
       await solicitudVisitaService.eliminar(id);
 
       res.status(204).send();
     } catch (error) {
+      
+      if (
+        error instanceof Error &&
+        error.message ===
+        "No tenés permiso para modificar esta propiedad"
+      ) {
+        return res.status(403).json({
+          message: "No tenés permiso para acceder a estas solicitudes",
+        });
+      }
+
       res.status(404).json({
         message: error instanceof Error
           ? error.message

@@ -8,10 +8,14 @@ import { CrearSolicitudVisitaDto } from "../dtos/solicitud-visita-dto";
 
 class SolicitudVisitaService {
 
-  //Listar todas las solicitudes
-  listar(): Promise<SolicitudVisita[]> {
-    return solicitudVisitaRepository.listar();
+  
+  // Listamos solamente las solicitudes del vendedor autenticado.
+  listar(vendedorId: number): Promise<SolicitudVisita[]> {
+
+    // Le pasamos el ID al Repository para filtrar.
+    return solicitudVisitaRepository.listar(vendedorId);
   }
+
 
 
   //BUSCAR UNA SOLICITUD POR ID

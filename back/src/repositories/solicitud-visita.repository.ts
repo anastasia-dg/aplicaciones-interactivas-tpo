@@ -11,13 +11,34 @@ class SolicitudVisitaRepository {
   }
 
 
-  // Busca TODAS las solicitudes de visita.
-  // También trae la propiedad relacionada con cada solicitud.
-  listar(): Promise<SolicitudVisita[]> {
+  
+  // Lista solamente las solicitudes de las propiedades
+  // que pertenecen al vendedor que inició sesión.
+  listar(vendedorId: number): Promise<SolicitudVisita[]> {
     return this.repository.find({
+
+      // Filtramos siguiendo las relaciones:
+      // solicitud -> propiedad -> inmobiliaria -> vendedor
+      where: {
+        propiedad: {
+          inmobiliaria: {
+            vendedor: {
+              id: vendedorId,
+            },
+          },
+        },
+      },
+
+      // Traemos también los datos de la propiedad.
       relations: ["propiedad"],
+
+      // Mostramos primero las solicitudes más recientes.
+      order: {
+        fechaCreacion: "DESC",
+      },
     });
   }
+
 
   // Busca UNA solicitud de visita según su ID.
   buscarPorId(id: number): Promise<SolicitudVisita | null> {
