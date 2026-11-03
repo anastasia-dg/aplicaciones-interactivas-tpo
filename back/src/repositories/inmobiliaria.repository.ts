@@ -2,6 +2,7 @@
 import { EntityManager, Repository } from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { Inmobiliaria } from "../entities/inmobiliaria.entity";
+import { EstadoPropiedad } from "../entities/enums";
 
 
 class InmobiliariaRepository {
@@ -29,6 +30,44 @@ class InmobiliariaRepository {
       relations: ["vendedor", "propiedades", "reseñas"],
     });
   }
+
+  
+  // BUSCAR EL PERFIL PUBLICO DE UNA INMOBILIARIA
+  buscarPerfilPublico(id: number): Promise<Inmobiliaria | null> {
+
+    // Buscamos la inmobiliaria por su ID.
+    return this.repository.findOne({
+
+      where: {
+        id,
+      },
+
+      // Traemos las propiedades y sus fotos,
+      // pero NO los datos privados del vendedor.
+      relations: [
+        "propiedades",
+        "propiedades.fotos",
+      ],
+
+      // Solo cargamos propiedades publicadas.
+      relationLoadStrategy: "query",
+    }).then((inmobiliaria) => {
+
+      // Si la inmobiliaria no existe, devolvemos null.
+      if (!inmobiliaria) {
+        return null;
+      }
+
+      // Dejamos únicamente las propiedades publicadas.
+      inmobiliaria.propiedades = inmobiliaria.propiedades.filter(
+        (propiedad) =>
+          propiedad.estado === EstadoPropiedad.PUBLICADA
+      );
+
+      return inmobiliaria;
+    });
+  }
+
 
 
   // Busca una inmobiliaria por su nombre.

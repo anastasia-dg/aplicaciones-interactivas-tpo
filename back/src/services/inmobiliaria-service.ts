@@ -37,6 +37,24 @@ class InmobiliariaService {
     return inmobiliaria;
   }
 
+  
+  // OBTENER EL PERFIL PUBLICO DE UNA INMOBILIARIA
+  async buscarPerfilPublico(id: number): Promise<Inmobiliaria> {
+
+    // Buscamos el perfil utilizando el Repository
+    const inmobiliaria =
+      await inmobiliariaRepository.buscarPerfilPublico(id);
+
+    // Si no existe, devolvemos un error
+    if (!inmobiliaria) {
+      throw new Error("Inmobiliaria no encontrada");
+    }
+
+    // Devolvemos el perfil con sus propiedades publicadas
+    return inmobiliaria;
+  }
+
+
 
 // CREAR INMOBILIARIA
   async crear(datos: CrearInmobiliariaDto): Promise<Inmobiliaria> {

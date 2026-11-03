@@ -21,6 +21,15 @@ inmobiliariaRouter.get(
   inmobiliariaController.buscarPorId
 );
 
+
+  // GET /inmobiliarias/:id/perfil
+  // Muestra los datos públicos de una inmobiliaria
+  inmobiliariaRouter.get(
+    "/:id/perfil",
+    inmobiliariaController.buscarPerfilPublico
+  );
+
+
 // PATCH /inmobiliarias/:id
 inmobiliariaRouter.patch(
   "/:id",
