@@ -32,6 +32,14 @@ export const vendedorController = {
         });
       }
 
+      // Comprobamos que el vendedor de la URL
+      // sea el mismo que inició sesión.
+      if (id !== req.vendedorId) {
+        return res.status(403).json({
+          message: "No tenés permiso para acceder a este vendedor",
+        });
+      }
+
       const vendedor = await vendedorService.buscarPorId(id);
 
       res.status(200).json(vendedor);
@@ -103,6 +111,14 @@ export const vendedorController = {
         });
       }
 
+      // Comprobamos que el vendedor de la URL
+      // sea el mismo que inició sesión.
+      if (id !== req.vendedorId) {
+        return res.status(403).json({
+          message: "No tenés permiso para acceder a este vendedor",
+        });
+      }
+
       const datos =
         actualizarVendedorSchema.parse(req.body);
 
@@ -127,6 +143,14 @@ export const vendedorController = {
       if (isNaN(id)) {
         return res.status(400).json({
           message: "El ID debe ser un número",
+        });
+      }
+      
+      // Comprobamos que el vendedor de la URL
+      // sea el mismo que inició sesión.
+      if (id !== req.vendedorId) {
+        return res.status(403).json({
+          message: "No tenés permiso para acceder a este vendedor",
         });
       }
 
