@@ -2,8 +2,12 @@ import { Router } from "express";
 import {
   historialEstadoPropiedadController,
 } from "../controllers/historial-estado-propiedad.controller";
+import { verificarToken } from "../middlewares/auth.middleware";
 
 export const historialEstadoPropiedadRouter = Router();
+
+// Todas las rutas del historial requieren iniciar sesión.
+historialEstadoPropiedadRouter.use(verificarToken); //esto protege automaticamente las rutas
 
 // GET /historial-estados-propiedad
 historialEstadoPropiedadRouter.get(
