@@ -12,12 +12,18 @@ class InmobiliariaRepository {
     return AppDataSource.getRepository(Inmobiliaria);
   }
 
-  // Busca TODAS las inmobiliarias.
+  
+  // Lista las inmobiliarias para el público
   listar(): Promise<Inmobiliaria[]> {
     return this.repository.find({
-      relations: ["vendedor"],
+      // No cargamos la relación vendedor,
+      // porque contiene información privada.
+      order: {
+        nombre: "ASC",
+      },
     });
   }
+
 
   // Busca UNA inmobiliaria por su ID.
   //

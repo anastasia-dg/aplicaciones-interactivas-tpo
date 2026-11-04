@@ -25,6 +25,15 @@ propiedadRouter.get(
   propiedadController.listarMisPropiedades
 );
 
+// GET /propiedades/mis-propiedades/:id
+// Solo el dueño puede consultar el detalle privado.
+propiedadRouter.get(
+  "/mis-propiedades/:id",
+  verificarToken,
+  propiedadController.buscarMiPropiedadPorId
+);
+
+
 // GET /propiedades/:id
 propiedadRouter.get(
   "/:id",

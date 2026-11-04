@@ -31,8 +31,12 @@ export const inmobiliariaController = {
         });
       }
 
+      
+      // Usamos el perfil público en lugar de la consulta interna.
+      // Así no devolvemos al vendedor ni propiedades en borrador.
       const inmobiliaria =
-        await inmobiliariaService.buscarPorId(id);
+        await inmobiliariaService.buscarPerfilPublico(id);
+
 
       res.status(200).json(inmobiliaria);
     } catch (error) {

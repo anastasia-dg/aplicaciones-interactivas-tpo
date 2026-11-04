@@ -126,6 +126,68 @@ class PropiedadController {
       });
     }
   }
+  
+ // Busca el detalle de una propiedad del vendedor autenticado.
+  async buscarMiPropiedadPorId(
+    request: Request,
+    response: Response
+  ) {
+    try {
+      // Obtenemos el ID de la propiedad desde la URL.
+      const id = Number(request.params.id);
+
+      // Comprobamos que sea un número entero positivo.
+      if (!Number.isInteger(id) || id <= 0) {
+        return response.status(400).json({
+          mensaje: "El ID de la propiedad no es válido",
+        });
+      }
+
+      // Verificamos que la propiedad pertenezca
+      // al vendedor que inició sesión.
+      await propiedadService.verificarPropietario(
+        id,
+        request.vendedorId!
+      );
+
+      // Buscamos la propiedad con sus datos completos.
+      // Puede estar en BORRADOR, PUBLICADA, PAUSADA, etc.
+      const propiedad = await propiedadService.buscarPorId(id);
+
+      // Devolvemos la propiedad solamente a su dueño.
+      return response.status(200).json(propiedad);
+
+    } catch (error) {
+
+      // La propiedad no existe.
+      if (
+        error instanceof Error &&
+        error.message === "Propiedad no encontrada"
+      ) {
+        return response.status(404).json({
+          mensaje: error.message,
+        });
+      }
+
+      // La propiedad pertenece a otro vendedor.
+      if (
+        error instanceof Error &&
+        error.message ===
+        "No tenés permiso para modificar esta propiedad"
+      ) {
+        return response.status(403).json({
+          mensaje: "No tenés permiso para ver esta propiedad",
+        });
+      }
+
+      // Cualquier otro error.
+      console.error(error);
+
+      return response.status(500).json({
+        mensaje: "Error al buscar la propiedad",
+      });
+    }
+  }
 
 
   // Crea una propiedad.
