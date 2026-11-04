@@ -122,6 +122,22 @@ export const fotoPropiedadController = {
           message: error.message,
         });
       }
+      
+      // La propiedad existe, pero no permite modificar fotos.
+      if (
+        error instanceof Error &&
+        (
+          error.message ===
+            "No se pueden modificar fotos de una propiedad finalizada" ||
+          error.message ===
+            "No se pueden modificar fotos con visitas futuras confirmadas"
+        )
+      ) {
+        return res.status(409).json({
+          message: error.message,
+        });
+      }
+
 
       return res.status(400).json({
         message: error instanceof Error
@@ -171,6 +187,25 @@ export const fotoPropiedadController = {
           message: error.message,
         });
       }
+      
+      // La foto existe, pero su modificación
+      // incumple alguna regla de negocio.
+      if (
+        error instanceof Error &&
+        (
+          error.message ===
+            "No se pueden modificar fotos de una propiedad finalizada" ||
+          error.message ===
+            "No se pueden modificar fotos con visitas futuras confirmadas" ||
+          error.message ===
+            "Una propiedad publicada debe conservar una foto de portada"
+        )
+      ) {
+        return res.status(409).json({
+          message: error.message,
+        });
+      }
+
 
       res.status(400).json({
         message: error instanceof Error
@@ -214,6 +249,26 @@ export const fotoPropiedadController = {
           "No tenés permiso para modificar esta propiedad"
       ) {
         return res.status(403).json({
+          message: error.message,
+        });
+      }
+      
+      // La foto existe, pero una regla de negocio
+      // impide eliminarla.
+      if (
+        error instanceof Error &&
+        (
+          error.message ===
+            "No se pueden modificar fotos de una propiedad finalizada" ||
+          error.message ===
+            "No se pueden modificar fotos con visitas futuras confirmadas" ||
+          error.message ===
+            "No se puede eliminar la portada de una propiedad publicada"
+        )
+      ) {
+        // 409 significa que la operación entra en conflicto
+        // con el estado actual de la propiedad.
+        return res.status(409).json({
           message: error.message,
         });
       }

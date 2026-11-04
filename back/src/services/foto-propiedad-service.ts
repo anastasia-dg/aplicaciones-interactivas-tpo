@@ -7,6 +7,8 @@ import {
   ActualizarFotoPropiedadDto,
 } from "../dtos/foto-propiedad-dto";
 import { AppDataSource } from "../config/data-source";
+import { solicitudVisitaRepository } from "../repositories/solicitud-visita.repository";
+import { EstadoSolicitudVisita } from "../entities/enums";
 
 class FotoPropiedadService {
 
@@ -91,6 +93,47 @@ class FotoPropiedadService {
   }
 
 
+  // Comprueba si una propiedad puede modificar sus fotos.
+  private async verificarEdicionPermitida(
+    propiedadId: number
+  ): Promise<void> {
+
+    // Buscamos la propiedad.
+    const propiedad = await propiedadRepository.buscarPorId(propiedadId);
+
+    if (!propiedad) {
+      throw new Error("Propiedad no encontrada");
+    }
+
+    // No permitimos modificar fotos de propiedades finalizadas.
+    if (
+      propiedad.estado === EstadoPropiedad.VENDIDA ||
+      propiedad.estado === EstadoPropiedad.ALQUILADA ||
+      propiedad.estado === EstadoPropiedad.CANCELADA
+    ) {
+      throw new Error("No se pueden modificar fotos de una propiedad finalizada");
+    }
+
+    // Buscamos las solicitudes de visita.
+    const solicitudes =
+      await solicitudVisitaRepository.buscarPorPropiedad(propiedadId);
+
+    // Comprobamos si alguna visita está confirmada
+    // y tiene una fecha posterior a la actual.
+    const tieneVisitaFutura = solicitudes.some(
+      (solicitud) =>
+        solicitud.estado === EstadoSolicitudVisita.CONFIRMADA &&
+        new Date(solicitud.fechaHoraPropuesta) > new Date()
+    );
+
+    // Si existe, impedimos modificar las fotos.
+    if (tieneVisitaFutura) {
+      throw new Error(
+        "No se pueden modificar fotos con visitas futuras confirmadas"
+      );
+    }
+  }
+
 
   // CREAR FOTO
   async crear(
@@ -100,6 +143,8 @@ class FotoPropiedadService {
 
     // Comprobamos que la propiedad exista.
     const propiedad = await propiedadRepository.buscarPorId(propiedadId);
+    
+    await this.verificarEdicionPermitida(propiedadId);
 
     if (!propiedad) {
       throw new Error("Propiedad no encontrada");
@@ -161,6 +206,8 @@ class FotoPropiedadService {
     // Buscamos la foto que queremos modificar.
     const foto = await this.buscarPorId(id);
 
+    await this.verificarEdicionPermitida(foto.propiedad.id);
+
     // Si queremos convertir esta foto en portada,
     // hacemos los cambios dentro de una transacción.
     if (datos.esPortada === true) {
@@ -216,6 +263,8 @@ class FotoPropiedadService {
 
     // Comprobamos que la foto exista.
     const foto = await this.buscarPorId(id);
+
+    await this.verificarEdicionPermitida(foto.propiedad.id);
 
     // No dejamos eliminar la portada de una propiedad publicada.
     if (
