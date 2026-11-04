@@ -13,6 +13,7 @@ propiedadRouter.get(
 // POST /propiedades
 propiedadRouter.post(
   "/",
+  verificarToken,
   propiedadController.crear
 );
 

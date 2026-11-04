@@ -45,14 +45,6 @@ solicitudVisitaRouter.delete(
   solicitudVisitaController.eliminar
 );
 
-// GET /solicitudes-visita
-//Devuelve solo las solicitudes del vendedor autenticado
-solicitudVisitaRouter.get(
-  "/",
-  verificarToken,
-  solicitudVisitaController.listar
-);
-
 
 /*
 // GET /solicitudes-visita/propiedad/:propiedadId
