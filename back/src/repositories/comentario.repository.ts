@@ -1,6 +1,7 @@
 import { Repository } from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { Comentario } from "../entities/comentario.entity";
+import { EstadoPropiedad } from "../entities/enums";
 
 
 class ComentarioRepository {
@@ -10,12 +11,24 @@ class ComentarioRepository {
     return AppDataSource.getRepository(Comentario);
   }
 
-  // Busca TODOS los comentarios.
+  
+  // Lista únicamente comentarios de propiedades publicadas.
   listar(): Promise<Comentario[]> {
     return this.repository.find({
+
+      // Solo buscamos comentarios cuya propiedad
+      // esté publicada.
+      where: {
+        propiedad: {
+          estado: EstadoPropiedad.PUBLICADA,
+        },
+      },
+
+      // Incluimos la propiedad relacionada.
       relations: ["propiedad"],
     });
   }
+
 
   // Busca UN comentario según su ID.
   // Devuelve el comentario si existe o null si no lo encuentra.
@@ -37,6 +50,41 @@ class ComentarioRepository {
       relations: ["propiedad"],
     });
   }
+  
+  // Busca un comentario público por su ID.
+  buscarPublicoPorId(id: number): Promise<Comentario | null> {
+    return this.repository.findOne({
+      where: {
+        id,
+
+        // Solo si pertenece a una propiedad publicada.
+        propiedad: {
+          estado: EstadoPropiedad.PUBLICADA,
+        },
+      },
+
+      relations: ["propiedad"],
+    });
+  }
+
+  // Busca los comentarios públicos de una propiedad.
+  buscarPublicosPorPropiedad(
+    propiedadId: number
+  ): Promise<Comentario[]> {
+    return this.repository.find({
+      where: {
+        propiedad: {
+          id: propiedadId,
+
+          // No mostramos comentarios de borradores.
+          estado: EstadoPropiedad.PUBLICADA,
+        },
+      },
+
+      relations: ["propiedad"],
+    });
+  }
+
 
 
   // Recibe los datos para crear un comentario.

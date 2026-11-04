@@ -2,7 +2,7 @@ import { comentarioRepository } from "../repositories/comentario.repository";
 import { propiedadRepository } from "../repositories/propiedad.repository";
 import { actividadService } from "./actividad-service";
 import { Comentario } from "../entities/comentario.entity";
-import { TipoActividad } from "../entities/enums";
+import { TipoActividad, EstadoPropiedad} from "../entities/enums";
 import { CrearComentarioDto, ResponderComentarioDto } from "../dtos/comentario-dto";
 
 
@@ -33,6 +33,32 @@ class ComentarioService {
   buscarPorPropiedad(propiedadId: number): Promise<Comentario[]> {
     return comentarioRepository.buscarPorPropiedad(propiedadId);
   }
+  
+  // Busca un comentario que pueda mostrarse públicamente.
+  async buscarPublicoPorId(id: number): Promise<Comentario> {
+
+    // Consultamos el Repository.
+    const comentario =
+      await comentarioRepository.buscarPublicoPorId(id);
+
+    // Si no existe o la propiedad no está publicada.
+    if (!comentario) {
+      throw new Error("Comentario no encontrado");
+    }
+
+    return comentario;
+  }
+
+  // Busca los comentarios públicos de una propiedad.
+  buscarPublicosPorPropiedad(
+    propiedadId: number
+  ): Promise<Comentario[]> {
+
+    return comentarioRepository.buscarPublicosPorPropiedad(
+      propiedadId
+    );
+  }
+
 
 
   // CREAR UN COMENTARIO
@@ -46,6 +72,17 @@ class ComentarioService {
     if (!propiedad) {
         throw new Error("Propiedad no encontrada");
     }
+    
+      // Comprobamos que la propiedad esté publicada.
+      if (propiedad.estado !== EstadoPropiedad.PUBLICADA) {
+
+        // No permitimos comentar propiedades en borrador,
+        // pausadas, reservadas o con cualquier otro estado.
+        throw new Error(
+          "No se pueden crear comentarios en una propiedad no publicada"
+        );
+      }
+
 
     // Creamos el comentario con los datos
     // que ya fueron validados por el DTO.

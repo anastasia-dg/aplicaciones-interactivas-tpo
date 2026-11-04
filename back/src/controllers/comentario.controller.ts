@@ -33,8 +33,9 @@ export const comentarioController = {
         });
       }
 
+      // Buscamos solamente comentarios públicos.
       const comentario =
-        await comentarioService.buscarPorId(id);
+        await comentarioService.buscarPublicoPorId(id);
 
       res.status(200).json(comentario);
     } catch (error) {
@@ -57,8 +58,9 @@ export const comentarioController = {
         });
       }
 
+      // Mostramos comentarios solo de propiedades publicadas.
       const comentarios =
-        await comentarioService.buscarPorPropiedad(propiedadId);
+        await comentarioService.buscarPublicosPorPropiedad(propiedadId);
 
       res.status(200).json(comentarios);
     } catch (error) {
@@ -87,13 +89,38 @@ export const comentarioController = {
         await comentarioService.crear(propiedadId, datos);
 
       res.status(201).json(comentario);
+
     } catch (error) {
-      res.status(400).json({
+
+      // La propiedad existe, pero no está publicada.
+      if (
+        error instanceof Error &&
+        error.message ===
+        "No se pueden crear comentarios en una propiedad no publicada"
+      ) {
+        return res.status(409).json({
+          message: error.message,
+        });
+      }
+
+      // La propiedad no existe.
+      if (
+        error instanceof Error &&
+        error.message === "Propiedad no encontrada"
+      ) {
+        return res.status(404).json({
+          message: error.message,
+        });
+      }
+
+      // Otros errores, como datos inválidos.
+      return res.status(400).json({
         message: error instanceof Error
           ? error.message
           : "Error al crear comentario",
       });
     }
+
   },
 
 
