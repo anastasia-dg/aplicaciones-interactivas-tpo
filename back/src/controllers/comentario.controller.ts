@@ -4,6 +4,7 @@ import {
   crearComentarioSchema,
   responderComentarioSchema,
 } from "../dtos/comentario-dto";
+import { propiedadService } from "../services/propiedad-service";
 
 export const comentarioController = {
 
@@ -106,6 +107,16 @@ export const comentarioController = {
         });
       }
 
+      // Buscamos el comentario para saber a qué propiedad pertenece.
+      const comentarioActual = await comentarioService.buscarPorId(id);
+
+      // Comprobamos que el vendedor autenticado
+      // sea dueño de la propiedad del comentario.
+      await propiedadService.verificarPropietario(
+        comentarioActual.propiedad.id,
+        req.vendedorId!
+      );
+
       // Validamos los datos que llegaron en el body.
       const datos =
         responderComentarioSchema.parse(req.body);
@@ -117,11 +128,27 @@ export const comentarioController = {
       res.status(200).json(comentario);
 
     } catch (error) {
-      res.status(400).json({
-        message: error instanceof Error
-          ? error.message
-          : "Error al responder comentario",
-      });
+      
+      // El vendedor inició sesión, pero la propiedad no le pertenece.
+      if (
+        error instanceof Error &&
+        error.message === "No tenés permiso para modificar esta propiedad"
+      ) {
+        return res.status(403).json({
+          message: error.message,
+        });
+      }
+
+      // El comentario no existe.
+      if (
+        error instanceof Error &&
+        error.message === "Comentario no encontrado"
+      ) {
+        return res.status(404).json({
+          message: error.message,
+        });
+      }
+
     }
   },
 
@@ -136,15 +163,39 @@ export const comentarioController = {
         });
       }
 
+      // Buscamos el comentario y su propiedad.
+      const comentarioActual = await comentarioService.buscarPorId(id);
+
+      // Solo el dueño de la propiedad puede eliminar el comentario.
+      await propiedadService.verificarPropietario(
+        comentarioActual.propiedad.id,
+        req.vendedorId!
+      );
+
       await comentarioService.eliminar(id);
 
       res.status(204).send();
     } catch (error) {
-      res.status(404).json({
-        message: error instanceof Error
-          ? error.message
-          : "Comentario no encontrado",
-      });
+      
+      // El vendedor inició sesión, pero la propiedad no le pertenece.
+      if (
+        error instanceof Error &&
+        error.message === "No tenés permiso para modificar esta propiedad"
+      ) {
+        return res.status(403).json({
+          message: error.message,
+        });
+      }
+
+      // El comentario no existe.
+      if (
+        error instanceof Error &&
+        error.message === "Comentario no encontrado"
+      ) {
+        return res.status(404).json({
+          message: error.message,
+        });
+      }
     }
   },
 };

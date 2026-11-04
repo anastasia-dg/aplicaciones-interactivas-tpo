@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { comentarioController } from "../controllers/comentario.controller";
+import { verificarToken } from "../middlewares/auth.middleware";
 
 export const comentarioRouter = Router();
 
@@ -28,13 +29,17 @@ comentarioRouter.get(
 );
 
 // PATCH /comentarios/:id/responder
+//Requiere iniciar sesion
 comentarioRouter.patch(
   "/:id/responder",
+  verificarToken,
   comentarioController.responder
 );
 
 // DELETE /comentarios/:id
+//Requiere iniciar sesion
 comentarioRouter.delete(
   "/:id",
+  verificarToken,
   comentarioController.eliminar
 );
