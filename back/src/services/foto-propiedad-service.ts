@@ -6,6 +6,7 @@ import {
   CrearFotoPropiedadDto,
   ActualizarFotoPropiedadDto,
 } from "../dtos/foto-propiedad-dto";
+import { AppDataSource } from "../config/data-source";
 
 class FotoPropiedadService {
 
@@ -104,10 +105,41 @@ class FotoPropiedadService {
       throw new Error("Propiedad no encontrada");
     }
 
-    // Si la nueva foto será portada, quitamos las portadas anteriores.
+    
+    // Si la nueva foto será portada,
+    // hacemos todos los cambios en una transacción.
     if (datos.esPortada === true) {
-      await this.quitarPortadas(propiedadId);
+
+      return AppDataSource.transaction(async (manager) => {
+
+        // Buscamos las fotos actuales de la propiedad.
+        const fotos = await manager.find(FotoPropiedad, {
+          where: {
+            propiedad: { id: propiedadId },
+          },
+        });
+
+        // Quitamos la portada a las fotos anteriores.
+        for (const foto of fotos) {
+          foto.esPortada = false;
+        }
+
+        // Guardamos los cambios.
+        await manager.save(FotoPropiedad, fotos);
+
+        // Creamos la foto nueva y la marcamos como portada.
+        const nuevaFoto = manager.create(FotoPropiedad, {
+          url: datos.url,
+          orden: datos.orden,
+          esPortada: true,
+          propiedad,
+        });
+
+        // Guardamos la nueva foto dentro de la transacción.
+        return manager.save(FotoPropiedad, nuevaFoto);
+      });
     }
+
 
     // Guardamos la nueva foto.
     return fotoPropiedadRepository.crear({
@@ -129,12 +161,36 @@ class FotoPropiedadService {
     // Buscamos la foto que queremos modificar.
     const foto = await this.buscarPorId(id);
 
-    // Si queremos convertirla en portada,
-    // quitamos la marca de las demás fotos.
+    // Si queremos convertir esta foto en portada,
+    // hacemos los cambios dentro de una transacción.
     if (datos.esPortada === true) {
-      await this.quitarPortadas(foto.propiedad.id, foto.id);
-    }
 
+      return AppDataSource.transaction(async (manager) => {
+
+        // Buscamos todas las fotos de esta propiedad.
+        const fotos = await manager.find(FotoPropiedad, {
+          where: {
+            propiedad: { id: foto.propiedad.id },
+          },
+        });
+
+        // Recorremos las fotos y dejamos solamente
+        // la elegida como portada.
+        for (const otraFoto of fotos) {
+          otraFoto.esPortada = otraFoto.id === foto.id;
+        }
+
+        // Guardamos todos los cambios en la transacción.
+        await manager.save(FotoPropiedad, fotos);
+
+        // Aplicamos los demás cambios recibidos,
+        // por ejemplo la URL o el orden.
+        Object.assign(foto, datos);
+
+        // Guardamos la foto elegida.
+        return manager.save(FotoPropiedad, foto);
+      });
+    }
     // Si queremos quitarle la portada a una foto publicada,
     // primero comprobamos que no deje la propiedad sin portada.
     if (
