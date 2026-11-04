@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { resenaService } from "../services/resena-service";
 import { crearReseñaSchema } from "../dtos/resena-dto";
+import { inmobiliariaService } from "../services/inmobiliaria-service";
 
 export const resenaController = {
 
@@ -96,25 +97,64 @@ export const resenaController = {
   },
 
 
+  
   async eliminar(req: Request, res: Response) {
     try {
+      // Obtenemos el ID de la reseña desde la URL.
       const id = Number(req.params.id);
 
-      if (isNaN(id)) {
+      // Verificamos que sea un número entero positivo.
+      if (!Number.isInteger(id) || id <= 0) {
         return res.status(400).json({
-          message: "El ID debe ser un número",
+          message: "El ID de la reseña no es válido",
         });
       }
 
+      // Buscamos la reseña para saber
+      // a qué inmobiliaria pertenece.
+      const resena = await resenaService.buscarPorId(id);
+
+      // Comprobamos que el vendedor que inició sesión
+      // sea dueño de esa inmobiliaria.
+      await inmobiliariaService.verificarPropietario(
+        resena.inmobiliaria.id,
+        req.vendedorId!
+      );
+
+      // Si tiene permiso, eliminamos la reseña.
       await resenaService.eliminar(id);
 
-      res.status(204).send();
+      // 204 indica que se eliminó correctamente.
+      return res.status(204).send();
+
     } catch (error) {
-      res.status(404).json({
-        message: error instanceof Error
-          ? error.message
-          : "Reseña no encontrada",
+
+      // La reseña no existe.
+      if (
+        error instanceof Error &&
+        error.message === "Reseña no encontrada"
+      ) {
+        return res.status(404).json({
+          message: error.message,
+        });
+      }
+
+      // El vendedor no es dueño de la inmobiliaria.
+      if (
+        error instanceof Error &&
+        error.message ===
+        "No tenés permiso para modificar esta inmobiliaria"
+      ) {
+        return res.status(403).json({
+          message: "No tenés permiso para eliminar esta reseña",
+        });
+      }
+
+      // Cualquier otro error inesperado.
+      return res.status(500).json({
+        message: "Error al eliminar la reseña",
       });
     }
   },
+
 };

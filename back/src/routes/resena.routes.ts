@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { resenaController } from "../controllers/reseña.controller";
+import { verificarToken } from "../middlewares/auth.middleware";
 
 export const resenaRouter = Router();
 
@@ -28,7 +29,9 @@ resenaRouter.get(
 );
 
 // DELETE /resenas/:id
+ // Eliminar una reseña requiere iniciar sesión.
 resenaRouter.delete(
   "/:id",
+  verificarToken,
   resenaController.eliminar
 );
