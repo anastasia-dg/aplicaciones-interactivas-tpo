@@ -146,6 +146,28 @@ export const solicitudVisitaController = {
       res.status(201).json(solicitud);
     } catch (error) {
       
+      // La propiedad existe, pero no está publicada.
+      if (
+        error instanceof Error &&
+        error.message ===
+        "No se pueden solicitar visitas para una propiedad no publicada"
+      ) {
+        return res.status(409).json({
+          message: error.message,
+        });
+      }
+
+      // La propiedad no existe.
+      if (
+        error instanceof Error &&
+        error.message === "Propiedad no encontrada"
+      ) {
+        return res.status(404).json({
+          message: error.message,
+        });
+      }
+
+      
       if (
         error instanceof Error &&
         error.message ===

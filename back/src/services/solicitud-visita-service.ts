@@ -2,8 +2,13 @@ import { solicitudVisitaRepository } from "../repositories/solicitud-visita.repo
 import { propiedadRepository } from "../repositories/propiedad.repository";
 import { actividadService } from "./actividad-service";
 import { SolicitudVisita } from "../entities/solicitud-visita.entity";
-import { EstadoSolicitudVisita, TipoActividad,} from "../entities/enums";
+import {
+  EstadoSolicitudVisita,
+  EstadoPropiedad,
+  TipoActividad,
+} from "../entities/enums";
 import { CrearSolicitudVisitaDto } from "../dtos/solicitud-visita-dto";
+
 
 
 class SolicitudVisitaService {
@@ -48,6 +53,17 @@ class SolicitudVisitaService {
     if (!propiedad) {
       throw new Error("Propiedad no encontrada");
     }
+    
+      // Comprobamos que la propiedad esté publicada.
+      if (propiedad.estado !== EstadoPropiedad.PUBLICADA) {
+
+        // No permitimos solicitar visitas para propiedades
+        // en borrador, pausadas o en cualquier otro estado.
+        throw new Error(
+          "No se pueden solicitar visitas para una propiedad no publicada"
+        );
+      }
+
 
     //Comprobar que tenga una fecha propuesta
     if (!datos.fechaHoraPropuesta) {
