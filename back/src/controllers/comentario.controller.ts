@@ -92,12 +92,15 @@ export const comentarioController = {
 
     } catch (error) {
 
-      // La propiedad existe, pero no está publicada.
+      // La propiedad existe, pero su estado
+      // no permite recibir comentarios.
       if (
         error instanceof Error &&
         error.message ===
-        "No se pueden crear comentarios en una propiedad no publicada"
+        "No se pueden crear comentarios en una propiedad no disponible para consultas"
       ) {
+        // Devolvemos 409 porque la acción
+        // entra en conflicto con el estado de la propiedad.
         return res.status(409).json({
           message: error.message,
         });

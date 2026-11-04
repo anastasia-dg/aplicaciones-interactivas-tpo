@@ -72,16 +72,23 @@ class ComentarioService {
     if (!propiedad) {
         throw new Error("Propiedad no encontrada");
     }
-    
-      // Comprobamos que la propiedad esté publicada.
-      if (propiedad.estado !== EstadoPropiedad.PUBLICADA) {
+     
+      // Comprobamos si la propiedad está en un estado
+      // que permite recibir comentarios.
+      const estadosPermitidos = [
+        EstadoPropiedad.PUBLICADA,
+        EstadoPropiedad.VENDIDA,
+        EstadoPropiedad.ALQUILADA,
+        EstadoPropiedad.CANCELADA,
+      ];
 
-        // No permitimos comentar propiedades en borrador,
-        // pausadas, reservadas o con cualquier otro estado.
+      // Si el estado no está en la lista, no permitimos comentar.
+      if (!estadosPermitidos.includes(propiedad.estado)) {
         throw new Error(
-          "No se pueden crear comentarios en una propiedad no publicada"
+          "No se pueden crear comentarios en una propiedad no disponible para consultas"
         );
       }
+
 
 
     // Creamos el comentario con los datos

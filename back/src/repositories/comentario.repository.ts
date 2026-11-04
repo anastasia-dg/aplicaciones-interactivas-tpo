@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { Comentario } from "../entities/comentario.entity";
 import { EstadoPropiedad } from "../entities/enums";
@@ -16,11 +16,16 @@ class ComentarioRepository {
   listar(): Promise<Comentario[]> {
     return this.repository.find({
 
-      // Solo buscamos comentarios cuya propiedad
-      // esté publicada.
+      // Mostramos comentarios de propiedades publicadas
+      // y también de propiedades finalizadas.
       where: {
         propiedad: {
-          estado: EstadoPropiedad.PUBLICADA,
+          estado: In([ //In permite buscar registros cuyo estado coincida con los valores en la lista
+            EstadoPropiedad.PUBLICADA,
+            EstadoPropiedad.VENDIDA,
+            EstadoPropiedad.ALQUILADA,
+            EstadoPropiedad.CANCELADA,
+          ]),
         },
       },
 
@@ -59,7 +64,12 @@ class ComentarioRepository {
 
         // Solo si pertenece a una propiedad publicada.
         propiedad: {
-          estado: EstadoPropiedad.PUBLICADA,
+          estado: In([
+            EstadoPropiedad.PUBLICADA,
+            EstadoPropiedad.VENDIDA,
+            EstadoPropiedad.ALQUILADA,
+            EstadoPropiedad.CANCELADA,
+          ]),
         },
       },
 
@@ -75,9 +85,12 @@ class ComentarioRepository {
       where: {
         propiedad: {
           id: propiedadId,
-
-          // No mostramos comentarios de borradores.
-          estado: EstadoPropiedad.PUBLICADA,
+          estado: In([
+            EstadoPropiedad.PUBLICADA,
+            EstadoPropiedad.VENDIDA,
+            EstadoPropiedad.ALQUILADA,
+            EstadoPropiedad.CANCELADA,
+          ]),
         },
       },
 
