@@ -256,19 +256,27 @@ export const solicitudVisitaController = {
         });
       }
 
-      // Si el cambio de estado no está permitido,
-      // devolvemos 409 porque hay un conflicto.
+      
       if (
         error instanceof Error &&
         (
+          // El cambio de estado no está permitido.
           error.message === "Cambio de estado de solicitud no permitido" ||
-          error.message === "La solicitud ya se encuentra finalizada"
+
+          // La solicitud ya fue realizada, cancelada o rechazada.
+          error.message === "La solicitud ya se encuentra finalizada" ||
+
+          // No permitimos confirmar una visita con fecha vencida.
+          error.message === "No se puede confirmar una visita cuya fecha ya pasó"
         )
       ) {
+        // 409 significa que la operación entra en conflicto
+        // con las reglas de negocio.
         return res.status(409).json({
-          message: error.message,
+          message: error.message
         });
       }
+
 
 
 

@@ -123,6 +123,27 @@ class SolicitudVisitaService {
 
     // REGLA: controlamos qué cambios de estado están permitidos.
     const estadoActual = solicitud.estado;
+    
+    // Si queremos confirmar una solicitud,
+    // comprobamos que la fecha de visita todavía no haya pasado.
+    if (nuevoEstado === EstadoSolicitudVisita.CONFIRMADA) {
+
+      // Obtenemos la fecha y hora actuales.
+      const ahora = new Date();
+
+      // Convertimos la fecha propuesta a un objeto Date
+      // para poder compararla con la fecha actual.
+      const fechaVisita = new Date(solicitud.fechaHoraPropuesta);
+
+      // Si la visita es anterior o igual a la fecha actual,
+      // no permitimos confirmarla.
+      if (fechaVisita <= ahora) {
+        throw new Error(
+          "No se puede confirmar una visita cuya fecha ya pasó"
+        );
+      }
+    }
+
 
 
     // Una solicitud PENDIENTE puede:
