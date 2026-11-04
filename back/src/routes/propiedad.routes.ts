@@ -17,6 +17,14 @@ propiedadRouter.post(
   propiedadController.crear
 );
 
+// GET /propiedades/mis-propiedades
+// Solo muestra las propiedades del vendedor autenticado.
+propiedadRouter.get(
+  "/mis-propiedades",
+  verificarToken,
+  propiedadController.listarMisPropiedades
+);
+
 // GET /propiedades/:id
 propiedadRouter.get(
   "/:id",

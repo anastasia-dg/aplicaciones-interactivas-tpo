@@ -3,6 +3,7 @@ import { AppDataSource } from "../config/data-source";
 import { Propiedad } from "../entities/propiedad.entity";
 import {Repository,FindOptionsWhere,ILike,Between,MoreThanOrEqual,LessThanOrEqual, Raw,} from "typeorm";
 import { ListarPropiedadesDto } from "../dtos/propiedad-dto";
+import { EstadoPropiedad } from "../entities/enums";
 
 class PropiedadRepository {
 
@@ -123,7 +124,22 @@ class PropiedadRepository {
     filtros: ListarPropiedadesDto
   ): Promise<{ propiedades: Propiedad[]; total: number }> {
 
-    const where = this.construirWhere(filtros);
+    
+    // Construimos los filtros de búsqueda que mandó el visitante
+    const filtrosBusqueda = this.construirWhere(filtros);
+
+    // En el catálogo público solamente mostramos
+    // propiedades que estén PUBLICADAS.
+    const where = Array.isArray(filtrosBusqueda)
+      ? filtrosBusqueda.map((condicion) => ({
+        ...condicion,
+        estado: EstadoPropiedad.PUBLICADA,
+      }))
+      : {
+        ...filtrosBusqueda,
+        estado: EstadoPropiedad.PUBLICADA,
+      };
+
 
     const [propiedades, total] = await this.repository.findAndCount({
       where,
@@ -145,6 +161,62 @@ class PropiedadRepository {
     return { propiedades, total };
   }
 
+  
+  // Lista las propiedades del vendedor autenticado.
+  // Incluye todos los estados: BORRADOR, PUBLICADA, etc.
+  async listarMisPropiedades(
+    filtros: ListarPropiedadesDto,
+    vendedorId: number
+  ): Promise<{ propiedades: Propiedad[]; total: number }> {
+
+    // Reutilizamos los filtros existentes.
+    const filtrosBusqueda = this.construirWhere(filtros);
+
+    // Agregamos la condición de que la inmobiliaria
+    // pertenezca al vendedor que inició sesión.
+    const propietario = {
+      inmobiliaria: {
+        vendedor: {
+          id: vendedorId,
+        },
+      },
+    };
+
+    // Si hay búsqueda por texto, debemos aplicar
+    // el filtro de propietario a ambas condiciones.
+    const where = Array.isArray(filtrosBusqueda)
+      ? filtrosBusqueda.map((condicion) => ({
+        ...condicion,
+        ...propietario,
+      }))
+      : {
+        ...filtrosBusqueda,
+        ...propietario,
+      };
+
+    // Buscamos las propiedades y contamos el total.
+    const [propiedades, total] = await this.repository.findAndCount({
+      where,
+
+      relations: ["fotos", "inmobiliaria"],
+
+      order: {
+        [filtros.ordenarPor === "fecha"
+          ? "fechaCreacion"
+          : filtros.ordenarPor === "superficie"
+            ? "superficieTotalM2"
+            : "precio"]: filtros.orden,
+      },
+
+      // Aplicamos la paginación.
+      skip: (filtros.page - 1) * filtros.limit,
+      take: filtros.limit,
+    });
+
+    return { propiedades, total };
+  }
+
+
   // Busca UNA propiedad según su ID.
   //
   // Puede devolver:
@@ -163,6 +235,30 @@ class PropiedadRepository {
       ],
     });
   }
+
+  
+  // Busca una propiedad para mostrarla públicamente.
+  // Solo devuelve propiedades PUBLICADAS.
+  buscarPublicadaPorId(id: number): Promise<Propiedad | null> {
+    return this.repository.findOne({
+      where: {
+        id,
+        estado: EstadoPropiedad.PUBLICADA,
+      },
+
+      // Traemos únicamente los datos necesarios
+      // para mostrar la publicación.
+      relations: [
+        "fotos",
+        "comentarios",
+        "inmobiliaria",
+      ],
+
+      // NO incluimos solicitudesVisita porque
+      // contienen datos personales de los visitantes.
+    });
+  }
+
 
 
   // Recibe los datos de una nueva propiedad.

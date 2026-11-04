@@ -48,6 +48,42 @@ class PropiedadController {
       });
     }
   }
+  
+  // Devuelve únicamente las propiedades del vendedor autenticado.
+  async listarMisPropiedades(request: Request, response: Response) {
+    try {
+      // Validamos los filtros recibidos por la URL.
+      const resultado = listarPropiedadesSchema.safeParse(
+        request.query
+      );
+
+      if (!resultado.success) {
+        return response.status(400).json({
+          mensaje: "Los filtros de búsqueda no son válidos",
+          errores: resultado.error.issues,
+        });
+      }
+
+      // Obtenemos el ID del vendedor desde el token.
+      const vendedorId = request.vendedorId!;
+
+      // Buscamos sus propiedades.
+      const datos = await propiedadService.listarMisPropiedades(
+        resultado.data,
+        vendedorId
+      );
+
+      return response.status(200).json(datos);
+
+    } catch (error) {
+      console.error(error);
+
+      return response.status(500).json({
+        mensaje: "Error al obtener tus propiedades",
+      });
+    }
+  }
+
 
 
   // Busca una propiedad por su ID.
@@ -66,8 +102,8 @@ class PropiedadController {
         });
       }
 
-      // Le pedimos al Service que busque la propiedad.
-      const propiedad = await propiedadService.buscarPorId(id);
+      // Consultamos la versión pública de la propiedad.
+      const propiedad = await propiedadService.buscarPublicadaPorId(id);
 
       return response.status(200).json(propiedad);
 

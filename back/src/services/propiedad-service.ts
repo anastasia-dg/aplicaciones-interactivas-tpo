@@ -67,8 +67,52 @@ class PropiedadService {
 
     return propiedad;
   }
+  
+  // Lista las propiedades del vendedor con filtros y paginación.
+  async listarMisPropiedades(
+    filtros: ListarPropiedadesDto,
+    vendedorId: number
+  ) {
+    // El Repository devuelve los resultados y su cantidad.
+    const { propiedades, total } =
+      await propiedadRepository.listarMisPropiedades(
+        filtros,
+        vendedorId
+      );
+
+    // Calculamos la cantidad de páginas.
+    const totalPaginas = Math.max(
+      Math.ceil(total / filtros.limit),
+      1
+    );
+
+    return {
+      propiedades,
+      paginacion: {
+        paginaActual: filtros.page,
+        porPagina: filtros.limit,
+        totalRegistros: total,
+        totalPaginas,
+      },
+    };
+  }
 
   
+  // Busca una propiedad para mostrarla a los visitantes.
+  async buscarPublicadaPorId(id: number): Promise<Propiedad> {
+
+    // Consultamos solamente propiedades publicadas.
+    const propiedad =
+      await propiedadRepository.buscarPublicadaPorId(id);
+
+    // Si no existe o no está publicada, devolvemos 404.
+    if (!propiedad) {
+      throw new Error("Propiedad no encontrada");
+    }
+
+    return propiedad;
+  }
+
   // COMPROBAR QUE LA PROPIEDAD PERTENEZCA AL VENDEDOR
   async verificarPropietario(
     propiedadId: number,
