@@ -412,7 +412,11 @@ class PropiedadController {
             "La propiedad debe tener al menos una foto para ser publicada" ||
 
           error.message ===
-            "La propiedad debe tener exactamente una foto de portada"
+          "La propiedad debe tener exactamente una foto de portada" ||
+
+          error.message ===
+          "No se puede cancelar ni finalizar una propiedad con visitas futuras confirmadas"
+
         )
       ) {
         return response.status(409).json({

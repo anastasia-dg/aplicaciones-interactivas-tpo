@@ -17,6 +17,10 @@ import {
   ListarPropiedadesDto,
 } from "../dtos/propiedad-dto";
 import { fotoPropiedadRepository } from "../repositories/foto-propiedad.repository";
+import { AppDataSource } from "../config/data-source";
+import { HistorialEstadoPropiedad } from "../entities/historial-estado-propiedad.entity";
+import { Actividad } from "../entities/actividad.entity";
+
 
 
 class PropiedadService {
@@ -329,6 +333,34 @@ class PropiedadService {
     const propiedad = await this.buscarPorId(id);
 
     const estadoAnterior = propiedad.estado;
+    // Buscamos las solicitudes de visita de esta propiedad.
+    const solicitudes = await solicitudVisitaRepository.buscarPorPropiedad(id);
+
+    // Guardamos la fecha y hora actual.
+    const ahora = new Date();
+
+    // Comprobamos si existe alguna visita confirmada
+    // cuya fecha todavía no haya llegado.
+    const tieneVisitaFuturaConfirmada = solicitudes.some(
+      (solicitud) =>
+        solicitud.estado === EstadoSolicitudVisita.CONFIRMADA &&
+        new Date(solicitud.fechaHoraPropuesta) > ahora
+    );
+
+    // Si tiene una visita futura confirmada,
+    // impedimos cancelar o finalizar la propiedad.
+    if (
+      tieneVisitaFuturaConfirmada &&
+      (
+        nuevoEstado === EstadoPropiedad.CANCELADA ||
+        nuevoEstado === EstadoPropiedad.VENDIDA ||
+        nuevoEstado === EstadoPropiedad.ALQUILADA
+      )
+    ) {
+      throw new Error(
+        "No se puede cancelar ni finalizar una propiedad con visitas futuras confirmadas"
+      );
+    }
 
     if (estadoAnterior === nuevoEstado) {
       throw new Error("La propiedad ya se encuentra en ese estado");
@@ -413,27 +445,51 @@ class PropiedadService {
     }
     }
 
-    propiedad.estado = nuevoEstado;
 
-    const propiedadActualizada =
-      await propiedadRepository.actualizar(propiedad);
+    // Iniciamos una transacción.
+    // Si falla alguna operación, se deshacen todas.
+    return AppDataSource.transaction(async (manager) => {
 
-    // Guardamos el cambio en el historial.
-    await historialEstadoPropiedadRepository.crear({
-      propiedad,
-      estadoAnterior,
-      estadoNuevo: nuevoEstado,
+      // Cambiamos el estado de la propiedad.
+      propiedad.estado = nuevoEstado;
+
+      // Guardamos la propiedad usando el manager
+      // que pertenece a esta transacción.
+      const propiedadActualizada = await manager.save(
+        Propiedad,
+        propiedad
+      );
+
+      // Creamos un registro con el estado anterior
+      // y el nuevo estado de la propiedad.
+      const historial = manager.create(
+        HistorialEstadoPropiedad,
+        {
+          propiedad: propiedadActualizada,
+          estadoAnterior,
+          estadoNuevo: nuevoEstado,
+        }
+      );
+
+      // Guardamos el historial dentro de la transacción.
+      await manager.save(HistorialEstadoPropiedad, historial);
+
+      // Creamos la notificación del cambio de estado.
+      const actividad = manager.create(Actividad, {
+        tipo: TipoActividad.CAMBIO_ESTADO_PROPIEDAD,
+        descripcion:
+          `La propiedad "${propiedad.titulo}" cambió de ${estadoAnterior} a ${nuevoEstado}`,
+        leida: false,
+        inmobiliaria: propiedad.inmobiliaria,
+      });
+
+      // Guardamos también la actividad en la transacción.
+      await manager.save(Actividad, actividad);
+
+      // Devolvemos la propiedad actualizada.
+      return propiedadActualizada;
     });
 
-    // Registramos el cambio como actividad.
-    await actividadService.crear({
-      tipo: TipoActividad.CAMBIO_ESTADO_PROPIEDAD,
-      descripcion:
-        `La propiedad "${propiedad.titulo}" cambió de ${estadoAnterior} a ${nuevoEstado}`,
-      inmobiliaria: propiedad.inmobiliaria,
-    });
-
-    return propiedadActualizada;
   }
 
 
