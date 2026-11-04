@@ -1,6 +1,7 @@
 import { Repository } from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { FotoPropiedad } from "../entities/foto-propiedad.entity";
+import { EstadoPropiedad } from "../entities/enums";
 
 
 class FotoPropiedadRepository {
@@ -11,13 +12,29 @@ class FotoPropiedadRepository {
   }
 
 
-  // Busca TODAS las fotos.
-  // También trae la propiedad a la que pertenece cada foto.
+  
+  // Lista solamente las fotos de propiedades publicadas
   listar(): Promise<FotoPropiedad[]> {
     return this.repository.find({
+
+      // Filtramos por el estado de la propiedad
+      // a la que pertenece cada foto.
+      where: {
+        propiedad: {
+          estado: EstadoPropiedad.PUBLICADA,
+        },
+      },
+
+      // Traemos la propiedad relacionada.
       relations: ["propiedad"],
+
+      // Ordenamos las fotos por su posición.
+      order: {
+        orden: "ASC",
+      },
     });
   }
+
 
   // Busca UNA foto según su ID.
   buscarPorId(id: number): Promise<FotoPropiedad | null> {
@@ -44,6 +61,40 @@ class FotoPropiedadRepository {
       },
     });
   }
+  
+  // Busca una foto pública por su ID.
+  buscarPublicaPorId(id: number): Promise<FotoPropiedad | null> {
+    return this.repository.findOne({
+      where: {
+        id,
+        // Solo si la propiedad está publicada.
+        propiedad: {
+          estado: EstadoPropiedad.PUBLICADA,
+        },
+      },
+      relations: ["propiedad"],
+    });
+  }
+
+  // Busca las fotos públicas de una propiedad.
+  buscarPublicasPorPropiedad(
+    propiedadId: number
+  ): Promise<FotoPropiedad[]> {
+    return this.repository.find({
+      where: {
+        propiedad: {
+          id: propiedadId,
+          // No mostramos fotos de borradores.
+          estado: EstadoPropiedad.PUBLICADA,
+        },
+      },
+      relations: ["propiedad"],
+      order: {
+        orden: "ASC",
+      },
+    });
+  }
+
 
   // Recibe los datos para crear una nueva foto.
   crear(datos: Partial<FotoPropiedad>): Promise<FotoPropiedad> {

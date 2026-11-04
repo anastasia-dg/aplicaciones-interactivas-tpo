@@ -33,8 +33,9 @@ export const fotoPropiedadController = {
         });
       }
 
+      // Buscamos únicamente una foto pública.
       const foto =
-        await fotoPropiedadService.buscarPorId(id);
+        await fotoPropiedadService.buscarPublicaPorId(id);
 
       res.status(200).json(foto);
     } catch (error) {
@@ -57,8 +58,9 @@ export const fotoPropiedadController = {
         });
       }
 
+      // Traemos solamente las fotos si la propiedad está publicada.
       const fotos =
-        await fotoPropiedadService.buscarPorPropiedad(
+        await fotoPropiedadService.buscarPublicasPorPropiedad(
           propiedadId
         );
 

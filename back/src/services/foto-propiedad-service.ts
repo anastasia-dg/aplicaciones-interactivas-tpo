@@ -67,6 +67,28 @@ class FotoPropiedadService {
       }
     }
   }
+  
+  // Busca una foto que pueda mostrarse públicamente.
+  async buscarPublicaPorId(id: number): Promise<FotoPropiedad> {
+    const foto = await fotoPropiedadRepository.buscarPublicaPorId(id);
+
+    // Si no existe o pertenece a una propiedad no publicada.
+    if (!foto) {
+      throw new Error("Foto no encontrada");
+    }
+
+    return foto;
+  }
+
+  // Busca las fotos públicas de una propiedad.
+  buscarPublicasPorPropiedad(
+    propiedadId: number
+  ): Promise<FotoPropiedad[]> {
+    return fotoPropiedadRepository.buscarPublicasPorPropiedad(
+      propiedadId
+    );
+  }
+
 
 
   // CREAR FOTO
