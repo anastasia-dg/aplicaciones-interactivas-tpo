@@ -13,13 +13,31 @@ class HistorialEstadoPropiedadRepository {
   }
 
 
-  // Busca TODOS los registros del historial.
-  // También trae la propiedad relacionada.
-  listar(): Promise<HistorialEstadoPropiedad[]> {
+  
+  // Lista solamente los historiales de las propiedades
+  // que pertenecen al vendedor autenticado.
+  listar(vendedorId: number): Promise<HistorialEstadoPropiedad[]> {
     return this.repository.find({
+      where: {
+        propiedad: {
+          inmobiliaria: {
+            vendedor: {
+              id: vendedorId,
+            },
+          },
+        },
+      },
+
+      // Traemos la propiedad relacionada con cada historial.
       relations: ["propiedad"],
+
+      // Mostramos primero los cambios más recientes.
+      order: {
+        fechaCreacion: "DESC",
+      },
     });
   }
+
 
   // Busca UN registro del historial según su ID.
   // Devuelve el registro o null si no existe.

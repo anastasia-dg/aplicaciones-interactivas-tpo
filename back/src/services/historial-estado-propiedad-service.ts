@@ -3,10 +3,12 @@ import { HistorialEstadoPropiedad } from "../entities/historial-estado-propiedad
 
 
 class HistorialEstadoPropiedadService {
-    // Devuelve todos los registros de cambios de estado que existen en la base de datos.
-  listar(): Promise<HistorialEstadoPropiedad[]> {
-    return historialEstadoPropiedadRepository.listar();
+    
+  // Recibe el ID del vendedor y lo pasa al Repository.
+  listar(vendedorId: number): Promise<HistorialEstadoPropiedad[]> {
+    return historialEstadoPropiedadRepository.listar(vendedorId);
   }
+
 
 
   //BUSCAR REGISTRO POR ID

@@ -6,8 +6,11 @@ export const historialEstadoPropiedadController = {
 
   async listar(req: Request, res: Response) {
     try {
+      
+      // El ID viene del token que ya verificó el middleware.
       const historial =
-        await historialEstadoPropiedadService.listar();
+        await historialEstadoPropiedadService.listar(req.vendedorId!);
+
 
       res.status(200).json(historial);
     } catch (error) {
