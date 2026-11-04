@@ -178,6 +178,26 @@ export const comentarioController = {
           message: error.message,
         });
       }
+      
+      // Un comentario solamente puede tener una respuesta.
+      if (
+        error instanceof Error &&
+        error.message === "El comentario ya fue respondido"
+      ) {
+        // Devolvemos 409 porque ya existe una respuesta.
+        return res.status(409).json({
+          message: error.message,
+        });
+      }
+
+      // Si ocurre otro error, también respondemos
+      // para evitar que la petición quede sin respuesta.
+      return res.status(400).json({
+        message: error instanceof Error
+          ? error.message
+          : "Error al responder comentario",
+      });
+
 
     }
   },
@@ -226,6 +246,16 @@ export const comentarioController = {
           message: error.message,
         });
       }
+      
+      // Si ocurre un error inesperado,
+      // devolvemos 500 para que la petición
+      // no quede esperando una respuesta.
+      return res.status(500).json({
+        message: error instanceof Error
+          ? error.message
+          : "Error al eliminar comentario",
+      });
+
     }
   },
 };

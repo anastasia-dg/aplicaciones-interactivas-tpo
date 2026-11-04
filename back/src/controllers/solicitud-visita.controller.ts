@@ -58,24 +58,38 @@ export const solicitudVisitaController = {
         await solicitudVisitaService.buscarPorId(id);
 
       res.status(200).json(solicitud);
+    
     } catch (error) {
-      
+
+      // El vendedor no es dueño de la propiedad.
       if (
         error instanceof Error &&
         error.message ===
-        "No tenés permiso para modificar esta propiedad"
+          "No tenés permiso para modificar esta propiedad"
       ) {
         return res.status(403).json({
           message: "No tenés permiso para acceder a estas solicitudes",
         });
       }
 
-      res.status(404).json({
+      // La solicitud no existe en la base de datos.
+      if (
+        error instanceof Error &&
+        error.message === "Solicitud de visita no encontrada"
+      ) {
+        return res.status(404).json({
+          message: error.message,
+        });
+      }
+
+      // Cualquier otro error inesperado.
+      return res.status(500).json({
         message: error instanceof Error
           ? error.message
-          : "Solicitud no encontrada",
+          : "Error al buscar solicitud",
       });
     }
+
   },
 
 
@@ -230,6 +244,33 @@ export const solicitudVisitaController = {
           message: "No tenés permiso para acceder a estas solicitudes",
         });
       }
+      
+      
+      // Si la solicitud no existe, devolvemos 404.
+      if (
+        error instanceof Error &&
+        error.message === "Solicitud de visita no encontrada"
+      ) {
+        return res.status(404).json({
+          message: error.message,
+        });
+      }
+
+      // Si el cambio de estado no está permitido,
+      // devolvemos 409 porque hay un conflicto.
+      if (
+        error instanceof Error &&
+        (
+          error.message === "Cambio de estado de solicitud no permitido" ||
+          error.message === "La solicitud ya se encuentra finalizada"
+        )
+      ) {
+        return res.status(409).json({
+          message: error.message,
+        });
+      }
+
+
 
       res.status(400).json({
         message: error instanceof Error
@@ -264,23 +305,40 @@ export const solicitudVisitaController = {
       await solicitudVisitaService.eliminar(id);
 
       res.status(204).send();
+    
     } catch (error) {
-      
+
+      // Si el vendedor no es dueño de la propiedad,
+      // no tiene permiso para eliminar la solicitud.
       if (
         error instanceof Error &&
         error.message ===
-        "No tenés permiso para modificar esta propiedad"
+          "No tenés permiso para modificar esta propiedad"
       ) {
         return res.status(403).json({
           message: "No tenés permiso para acceder a estas solicitudes",
         });
       }
 
-      res.status(404).json({
+      // Si la solicitud no existe en la base de datos,
+      // devolvemos 404.
+      if (
+        error instanceof Error &&
+        error.message === "Solicitud de visita no encontrada"
+      ) {
+        return res.status(404).json({
+          message: error.message,
+        });
+      }
+
+      // Si ocurre otro error inesperado,
+      // devolvemos 500.
+      return res.status(500).json({
         message: error instanceof Error
           ? error.message
-          : "Solicitud no encontrada",
+          : "Error al eliminar solicitud",
       });
     }
+
   },
 };
