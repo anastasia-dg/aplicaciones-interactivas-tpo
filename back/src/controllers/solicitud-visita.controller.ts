@@ -5,6 +5,7 @@ import {
   cambiarEstadoSolicitudVisitaSchema,
 } from "../dtos/solicitud-visita-dto";
 import { propiedadService } from "../services/propiedad-service";
+import { ZodError } from "zod";
 
 export const solicitudVisitaController = {
 
@@ -192,10 +193,32 @@ export const solicitudVisitaController = {
         });
       }
 
-      res.status(400).json({
-        message: error instanceof Error
-          ? error.message
-          : "Error al crear solicitud",
+      
+      // Si los datos de la solicitud son incorrectos,
+      // devolvemos 400.
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Los datos de la solicitud no son válidos",
+          errores: error.issues,
+        });
+      }
+
+      // Si la fecha propuesta ya pasó,
+      // la solicitud no se puede crear.
+      if (
+        error instanceof Error &&
+        error.message === "La fecha de la visita debe ser futura"
+      ) {
+        return res.status(400).json({
+          message: error.message,
+        });
+      }
+
+      // Cualquier otro error es interno.
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Error interno al crear la solicitud",
       });
     }
   },
@@ -276,8 +299,15 @@ export const solicitudVisitaController = {
           message: error.message
         });
       }
-
       
+      // Si los datos enviados no son válidos,
+      // devolvemos 400 en lugar de 500.
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Los datos de la solicitud no son válidos",
+          errores: error.issues,
+        });
+      }
       // Si los errores anteriores no coincidieron,
       // significa que ocurrió un error inesperado.
 
