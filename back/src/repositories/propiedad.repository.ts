@@ -1,7 +1,7 @@
 // Repository es el tipo que nos da TypeORM para trabajar con una entidad
 import { AppDataSource } from "../config/data-source";
 import { Propiedad } from "../entities/propiedad.entity";
-import {Repository,FindOptionsWhere,ILike,Between,MoreThanOrEqual,LessThanOrEqual, Raw,} from "typeorm";
+import {In, Repository,FindOptionsWhere,ILike,Between,MoreThanOrEqual,LessThanOrEqual, Raw,} from "typeorm";
 import { ListarPropiedadesDto } from "../dtos/propiedad-dto";
 import { EstadoPropiedad } from "../entities/enums";
 
@@ -237,27 +237,38 @@ class PropiedadRepository {
   }
 
   
-  // Busca una propiedad para mostrarla públicamente.
-  // Solo devuelve propiedades PUBLICADAS.
+  
+  // Busca una propiedad que pueda mostrarse públicamente.
   buscarPublicadaPorId(id: number): Promise<Propiedad | null> {
+
     return this.repository.findOne({
+
+      // Buscamos la propiedad por su ID.
       where: {
         id,
-        estado: EstadoPropiedad.PUBLICADA,
+
+        // Permitimos consultar propiedades publicadas
+        // y también las que ya finalizaron.
+        estado: In([
+          EstadoPropiedad.PUBLICADA,
+          EstadoPropiedad.VENDIDA,
+          EstadoPropiedad.ALQUILADA,
+          EstadoPropiedad.CANCELADA,
+        ]),
       },
 
-      // Traemos únicamente los datos necesarios
-      // para mostrar la publicación.
+      // Traemos los datos necesarios para mostrarla.
       relations: [
         "fotos",
         "comentarios",
         "inmobiliaria",
       ],
 
-      // NO incluimos solicitudesVisita porque
-      // contienen datos personales de los visitantes.
+      // No incluimos solicitudesVisita
+      // porque contienen datos personales.
     });
   }
+
 
 
 

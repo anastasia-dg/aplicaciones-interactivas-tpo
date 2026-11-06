@@ -277,14 +277,20 @@ export const solicitudVisitaController = {
         });
       }
 
+      
+      // Si los errores anteriores no coincidieron,
+      // significa que ocurrió un error inesperado.
 
+      // Mostramos el error en la consola del servidor
+      // para poder investigar qué pasó.
+      console.error(error);
 
-
-      res.status(400).json({
-        message: error instanceof Error
-          ? error.message
-          : "Error al cambiar estado",
+      // Devolvemos 500 porque es un error interno.
+      // No mostramos detalles internos al usuario.
+      return res.status(500).json({
+        message: "Error interno al cambiar el estado de la solicitud",
       });
+
     }
   },
 
