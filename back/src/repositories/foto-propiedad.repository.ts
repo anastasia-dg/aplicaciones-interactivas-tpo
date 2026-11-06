@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { Repository, In} from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { FotoPropiedad } from "../entities/foto-propiedad.entity";
 import { EstadoPropiedad } from "../entities/enums";
@@ -67,9 +67,15 @@ class FotoPropiedadRepository {
     return this.repository.findOne({
       where: {
         id,
-        // Solo si la propiedad está publicada.
         propiedad: {
-          estado: EstadoPropiedad.PUBLICADA,
+          // Permitimos fotos de propiedades publicadas
+          // y también de propiedades finalizadas.
+          estado: In([
+            EstadoPropiedad.PUBLICADA,
+            EstadoPropiedad.VENDIDA,
+            EstadoPropiedad.ALQUILADA,
+            EstadoPropiedad.CANCELADA,
+          ]),
         },
       },
       relations: ["propiedad"],
@@ -84,8 +90,13 @@ class FotoPropiedadRepository {
       where: {
         propiedad: {
           id: propiedadId,
-          // No mostramos fotos de borradores.
-          estado: EstadoPropiedad.PUBLICADA,
+          // Mostramos fotos de propiedades públicas y finalizadas.
+          estado: In([
+            EstadoPropiedad.PUBLICADA,
+            EstadoPropiedad.VENDIDA,
+            EstadoPropiedad.ALQUILADA,
+            EstadoPropiedad.CANCELADA,
+          ]),
         },
       },
       relations: ["propiedad"],

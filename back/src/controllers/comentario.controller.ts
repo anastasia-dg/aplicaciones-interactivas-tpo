@@ -5,6 +5,7 @@ import {
   responderComentarioSchema,
 } from "../dtos/comentario-dto";
 import { propiedadService } from "../services/propiedad-service";
+import { ZodError } from "zod";
 
 export const comentarioController = {
 
@@ -116,11 +117,22 @@ export const comentarioController = {
         });
       }
 
-      // Otros errores, como datos inválidos.
-      return res.status(400).json({
-        message: error instanceof Error
-          ? error.message
-          : "Error al crear comentario",
+      // Si Zod detectó datos incorrectos,
+      // devolvemos 400 porque el problema está en el body.
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Los datos del comentario no son válidos",
+          errores: error.issues,
+        });
+      }
+
+      // Si llegamos hasta acá, ocurrió un error inesperado.
+      // Lo mostramos en la consola para poder investigarlo.
+      console.error(error);
+
+      // Devolvemos 500 porque es un error interno del servidor.
+      return res.status(500).json({
+        message: "Error interno al crear el comentario",
       });
     }
 
