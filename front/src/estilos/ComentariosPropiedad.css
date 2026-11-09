@@ -1,0 +1,114 @@
+/* Contenedor de toda la sección de comentarios. */
+.comentarios-propiedad {
+  /* Separa los comentarios de la sección anterior. */
+  margin-top: 40px;
+}
+
+/* Tarjeta que contiene cada comentario. */
+.tarjeta-comentario {
+  /* Agrega un borde gris alrededor. */
+  border: 1px solid #ddd;
+
+  /* Redondea las esquinas. */
+  border-radius: 10px;
+
+  /* Deja espacio entre el contenido y los bordes. */
+  padding: 15px;
+
+  /* Separa una tarjeta de otra. */
+  margin: 15px 0;
+}
+
+/* Nombre de la persona que hizo el comentario. */
+.tarjeta-comentario h3 {
+  /* Elimina el espacio superior predeterminado. */
+  margin-top: 0;
+}
+
+/* Recuadro donde aparece la respuesta del vendedor. */
+.respuesta-comentario {
+  /* Fondo gris azulado para distinguir la respuesta. */
+  background-color: #f3f6fa;
+
+  /* Esquinas redondeadas. */
+  border-radius: 8px;
+
+  /* Espacio dentro del recuadro. */
+  padding: 12px;
+
+  /* Separación entre la pregunta y la respuesta. */
+  margin-top: 15px;
+}
+
+/* Formulario para escribir una nueva consulta. */
+.formulario-comentario {
+  /* Organiza los campos uno debajo del otro. */
+  display: flex;
+  flex-direction: column;
+
+  /* Espacio entre los campos. */
+  gap: 10px;
+
+  /* Separa el formulario de los comentarios anteriores. */
+  margin-top: 20px;
+}
+
+/* Estilos del input y del textarea. */
+.formulario-comentario input,
+.formulario-comentario textarea {
+  /* Espacio interno para escribir cómodamente. */
+  padding: 10px;
+
+  /* Borde gris. */
+  border: 1px solid #ccc;
+
+  /* Esquinas redondeadas. */
+  border-radius: 6px;
+
+  /* Usa la misma fuente que el resto de la página. */
+  font: inherit;
+}
+
+/* Campo donde se escribe la consulta. */
+.formulario-comentario textarea {
+  /* Altura mínima del área de texto. */
+  min-height: 100px;
+
+  /* Permite cambiar su altura, pero no su ancho. */
+  resize: vertical;
+}
+
+/* Botón para publicar el comentario. */
+.formulario-comentario button {
+  /* Espacio dentro del botón. */
+  padding: 12px;
+
+  /* Quitamos el borde predeterminado. */
+  border: none;
+
+  /* Esquinas redondeadas. */
+  border-radius: 6px;
+
+  /* Color de fondo azul. */
+  background-color: #2563eb;
+
+  /* Texto blanco. */
+  color: white;
+
+  /* Muestra la manito al pasar el mouse. */
+  cursor: pointer;
+}
+
+/* Estilos cuando el botón está deshabilitado. */
+.formulario-comentario button:disabled {
+  /* Hace que el botón se vea más transparente. */
+  opacity: 0.6;
+
+  /* Indica que no se puede hacer clic. */
+  cursor: not-allowed;
+}
+
+/* Mensaje que aparece cuando ocurre un error. */
+.error-comentario {
+  color: red;
+}

@@ -1,0 +1,68 @@
+/* Estilos generales del encabezado */
+.encabezado {
+  display: flex; /* Coloca los elementos uno al lado del otro */
+  justify-content: space-between; /* Separa el logo y el menú hacia los extremos */
+  align-items: center; /* Centra los elementos verticalmente */
+  padding: 20px 40px; /* Deja 20px arriba y abajo, y 40px a los costados */
+  background-color: white; /* Pone el fondo blanco */
+  border-bottom: 1px solid #ddd; /* Agrega una línea gris fina debajo */
+}
+
+/* Estilos del nombre o logo del marketplace */
+.logo {
+  font-size: 26px; /* Tamaño de la letra del logo */
+  font-weight: bold; /* Pone el texto en negrita */
+  color: #2563eb; /* Pone el logo de color azul */
+  text-decoration: none; /* Quita el subrayado del enlace */
+}
+
+/* Estilos del menú de navegación */
+.menu {
+  display: flex; /* Coloca los enlaces uno al lado del otro */
+  align-items: center; /* Centra los enlaces verticalmente */
+  gap: 25px; /* Deja 25px de separación entre los enlaces */
+}
+
+/* Estilos de todos los enlaces que están dentro del menú */
+.menu a {
+  color: #333; /* Pone las letras de color gris oscuro */
+  text-decoration: none; /* Quita el subrayado de los enlaces */
+  font-weight: 500; /* Hace que las letras sean un poco más gruesas */
+}
+
+/* Estilos cuando pasamos el mouse sobre un enlace */
+.menu a:hover {
+  color: #2563eb; /* Cambia el color del enlace a azul */
+}
+
+/* Estilos del botón para iniciar sesión */
+.menu .boton-ingresar {
+  background-color: #2563eb; /* Pone el fondo del botón azul */
+  color: white; /* Pone las letras blancas */
+  padding: 10px 18px; /* Deja 10px arriba y abajo, y 18px a los costados */
+  border-radius: 8px; /* Redondea las esquinas del botón */
+}
+
+/* Estilos cuando pasamos el mouse sobre el botón */
+.menu .boton-ingresar:hover {
+  background-color: #1d4ed8; /* Cambia el fondo a un azul más oscuro */
+  color: white; /* Mantiene las letras blancas */
+}
+
+/* Estilos para celulares y pantallas de hasta 650px de ancho */
+@media (max-width: 650px) {
+
+  /* Cambios del encabezado en celulares */
+  .encabezado {
+    flex-direction: column; /* Coloca el logo arriba y el menú debajo */
+    gap: 15px; /* Deja 15px de separación entre el logo y el menú */
+    padding: 20px; /* Deja 20px de espacio en todos los lados */
+  }
+
+  /* Cambios del menú en celulares */
+  .menu {
+    flex-wrap: wrap; /* Permite que los enlaces bajen de línea si no entran */
+    justify-content: center; /* Centra los enlaces horizontalmente */
+    gap: 15px; /* Deja 15px de separación entre los enlaces */
+  }
+}

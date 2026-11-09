@@ -1,0 +1,132 @@
+/* Contenedor principal de la página de detalle. */
+.detalle-propiedad {
+  /* Ancho máximo para que el contenido no sea demasiado grande. */
+  max-width: 1000px;
+
+  /* Centra el contenido horizontalmente. */
+  margin: 0 auto;
+
+  /* Agrega espacio entre el contenido y los bordes. */
+  padding: 30px;
+}
+
+/* Estilos del título principal de la propiedad. */
+.detalle-propiedad h1 {
+  /* Deja espacio arriba del título. */
+  margin-top: 25px;
+}
+
+
+/* Contenedor de la galería de fotos. */
+.galeria-propiedad {
+  margin-top: 20px;
+}
+
+/* Foto principal que se muestra en grande. */
+.foto-detalle {
+  /* Ocupa todo el ancho disponible. */
+  width: 100%;
+
+  /* Mantiene la misma altura para todas las fotos. */
+  height: 450px;
+
+  /* Recorta la imagen sin deformarla. */
+  object-fit: cover;
+
+  /* Redondea las esquinas. */
+  border-radius: 10px;
+
+  /* Elimina el espacio extra debajo de la imagen. */
+  display: block;
+}
+
+/* Contenedor de las fotos pequeñas. */
+.miniaturas {
+  /* Coloca las miniaturas una al lado de la otra. */
+  display: flex;
+
+  /* Espacio entre cada miniatura. */
+  gap: 10px;
+
+  /* Separa las miniaturas de la foto principal. */
+  margin-top: 15px;
+
+  /* Permite desplazarse horizontalmente si hay muchas fotos. */
+  overflow-x: auto;
+}
+
+/* Botón que contiene cada miniatura. */
+.miniatura {
+  /* Tamaño fijo para todas las miniaturas. */
+  width: 110px;
+  height: 75px;
+
+  /* Evita que se achiquen cuando hay muchas. */
+  flex-shrink: 0;
+
+  /* Quitamos los estilos predeterminados del botón. */
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 6px;
+
+  /* Oculta las partes de la imagen que sobresalen. */
+  overflow: hidden;
+
+  /* Muestra la manito al pasar el mouse. */
+  cursor: pointer;
+}
+
+/* Imagen que está dentro de cada miniatura. */
+.miniatura img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Destacamos la miniatura seleccionada. */
+.miniatura.activa {
+  border-color: #2563eb;
+}
+
+/* Adaptamos la galería a pantallas pequeñas. */
+@media (max-width: 600px) {
+  .foto-detalle {
+    height: 250px;
+  }
+
+  .miniatura {
+    width: 85px;
+    height: 60px;
+  }
+}
+
+
+/* Estilos de los subtítulos: precio, características y descripción. */
+.detalle-propiedad h2 {
+  /* Separa cada sección de la anterior. */
+  margin-top: 25px;
+}
+
+
+/* Sección con los datos de la inmobiliaria. */
+.datos-inmobiliaria {
+  /* Separa esta sección de la descripción. */
+  margin-top: 35px;
+
+  /* Agrega espacio dentro del recuadro. */
+  padding: 20px;
+
+  /* Borde suave para distinguir la información. */
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+/* Nombre de la inmobiliaria. */
+.datos-inmobiliaria h3 {
+  margin: 15px 0;
+}
+
+/* Separación entre los datos de contacto. */
+.datos-inmobiliaria p {
+  margin-bottom: 10px;
+}

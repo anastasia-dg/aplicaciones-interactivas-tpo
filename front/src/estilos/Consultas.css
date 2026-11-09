@@ -1,0 +1,72 @@
+
+/* Contenedor principal */
+.pagina-consultas {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.pagina-consultas h1 {
+  margin-top: 25px;
+}
+
+/* Tarjeta de cada consulta */
+.tarjeta-consulta {
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: white;
+}
+
+.tarjeta-consulta h2 {
+  margin-top: 0;
+}
+
+.tarjeta-consulta p {
+  margin: 10px 0;
+}
+
+/* Respuesta ya publicada */
+.respuesta-consulta {
+  padding: 12px;
+  margin: 15px 0;
+  background-color: #f1f5f9;
+  border-radius: 6px;
+}
+
+/* Formulario para responder */
+.formulario-respuesta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.formulario-respuesta textarea {
+  min-height: 90px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+}
+
+/* Botón responder */
+.formulario-respuesta button {
+  align-self: flex-start;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.formulario-respuesta button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-consultas {
+  color: red;
+}

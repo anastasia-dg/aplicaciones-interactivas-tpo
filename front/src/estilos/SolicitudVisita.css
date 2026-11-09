@@ -1,0 +1,66 @@
+/* Contenedor principal de la solicitud de visita. */
+.solicitud-visita {
+  /* Separamos esta sección de la anterior. */
+  margin-top: 40px;
+
+  /* Agregamos espacio interno. */
+  padding: 25px;
+
+  /* Borde y esquinas redondeadas. */
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+/* Formulario con los campos uno debajo del otro. */
+.solicitud-visita form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* Campos para ingresar los datos. */
+.solicitud-visita input,
+.solicitud-visita textarea {
+  /* Espacio interno. */
+  padding: 10px;
+
+  /* Borde gris y esquinas redondeadas. */
+  border: 1px solid #ccc;
+  border-radius: 6px;
+
+  /* Usamos la fuente del resto de la página. */
+  font: inherit;
+}
+
+/* Campo del mensaje opcional. */
+.solicitud-visita textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Botón para enviar la solicitud. */
+.solicitud-visita button {
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+/* Cuando está enviando, deshabilitamos el botón. */
+.solicitud-visita button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mensaje cuando ocurre un error. */
+.error-visita {
+  color: #c62828;
+}
+
+/* Mensaje cuando la solicitud se envía correctamente. */
+.exito-visita {
+  color: #21803b;
+}

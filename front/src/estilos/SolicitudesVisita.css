@@ -1,0 +1,51 @@
+/* Contenedor principal de la página. */
+.pagina-solicitudes {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+/* Cada tarjeta representa una solicitud. */
+.tarjeta-solicitud {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+/* Título de la propiedad. */
+.tarjeta-solicitud h2 {
+  margin-top: 0;
+}
+
+/* Estado de la solicitud. */
+.estado-solicitud {
+  font-weight: bold;
+}
+
+/* Contenedor de los botones. */
+.botones-solicitud {
+  display: flex;
+  gap: 10px;
+}
+
+/* Botones de las solicitudes. */
+.tarjeta-solicitud button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+/* Botón deshabilitado mientras se actualiza. */
+.tarjeta-solicitud button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mensajes de error. */
+.error-solicitudes {
+  color: #c62828;
+}
