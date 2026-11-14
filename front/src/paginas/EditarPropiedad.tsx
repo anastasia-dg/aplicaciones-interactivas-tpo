@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router";
 import { API_URL } from "../servicios/api";
 import type { Propiedad } from "../tipos/Propiedad";
 import "../estilos/EditarPropiedad.css";
+import { OPCIONES_AMENITIES } from "../tipos/amenities";
 
 
 type PropiedadEditable = Propiedad & {
@@ -52,10 +53,16 @@ export default function EditarPropiedad() {
         }
       );
 
-      // res.ok indica si la petición fue exitosa.
-      if (!res.ok) {
-        throw new Error("No se pudo cargar la propiedad.");
-      }
+      // Si el backend rechaza la petición, mostramos el motivo.
+        if (!res.ok) {
+
+        // Obtenemos el mensaje que envió el backend.
+        const datos = await res.json();
+
+        throw new Error(
+            datos.mensaje || "No se pudo cargar la propiedad."
+        );
+        }
 
       // Convertimos la respuesta JSON en un objeto de JavaScript.
       const datos: PropiedadEditable = await res.json();
@@ -130,12 +137,8 @@ export default function EditarPropiedad() {
       banios: numeroOpcional("banios"),
       antiguedadAnios: numeroOpcional("antiguedadAnios"),
 
-      // Convertimos un texto separado por comas en un arreglo.
-      // Ejemplo: "pileta, cochera" -> ["pileta", "cochera"].
-      tags: String(datos.get("tags") || "")
-        .split(",")
-        .map(tag => tag.trim())
-        .filter(tag => tag !== ""),
+      // Obtenemos todas las características seleccionadas.
+      tags: datos.getAll("tags").map((tag) => String(tag)),
     };
 
     try {
@@ -322,6 +325,93 @@ export default function EditarPropiedad() {
     }
   }
 
+  // CAMBIAR EL ORDEN DE LAS FOTOS
+  async function moverFoto(indice: number, direccion: number) {
+
+    // Creamos una copia de las fotos ordenadas.
+    const fotos = [...(propiedad?.fotos ?? [])].sort(
+      (a, b) => a.orden - b.orden
+    );
+
+    // Calculamos la nueva posición.
+    const nuevaPosicion = indice + direccion;
+
+    // Si intenta salir de los límites, no hacemos nada
+    if (nuevaPosicion < 0 || nuevaPosicion >= fotos.length) {
+      return;
+    }
+
+    setError("");
+    setMensaje("");
+    setGuardando(true);
+
+    try {
+
+      // Intercambiamos las dos fotos de posición
+      const fotoActual = fotos[indice];
+      const fotoVecina = fotos[nuevaPosicion];
+
+      // PATCH actualiza el orden de la primera foto
+      const res1 = await fetch(
+        `${API_URL}/fotos-propiedad/${fotoActual.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            orden: nuevaPosicion,
+          }),
+        }
+      );
+
+      if (!res1.ok) {
+        const datos = await res1.json();
+        throw new Error(datos.message || "No se pudo mover la foto.");
+      }
+
+      // Actualizamos la posición de la foto vecina.
+      const res2 = await fetch(
+        `${API_URL}/fotos-propiedad/${fotoVecina.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            orden: indice,
+          }),
+        }
+      );
+
+      if (!res2.ok) {
+        const datos = await res2.json();
+        throw new Error(datos.message || "No se pudo completar el cambio.");
+      }
+
+      // Volvemos a cargar las fotos desde el backend.
+      await cargarPropiedad();
+
+      setMensaje("Orden de las fotos actualizado.");
+
+    } catch (err) {
+
+      setError(
+        err instanceof Error ? err.message : "Ocurrió un error."
+      );
+
+      // Recargamos porque podría haberse guardado
+      // solamente una de las dos modificaciones.
+      await cargarPropiedad();
+
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+
 
   // CAMBIAR EL ESTADO DE LA PROPIEDAD
   async function cambiarEstado(nuevoEstado: string) {
@@ -382,6 +472,10 @@ export default function EditarPropiedad() {
   // includes comprueba si el estado está dentro del arreglo.
   const finalizada = ["VENDIDA", "ALQUILADA", "CANCELADA"]
     .includes(propiedad.estado);
+  // Ordenamos las fotos para mostrarlas en su posición correcta.
+  const fotosOrdenadas = [...(propiedad.fotos ?? [])].sort(
+  (a, b) => a.orden - b.orden
+  );
 
 
   return (
@@ -558,14 +652,26 @@ export default function EditarPropiedad() {
           disabled={finalizada || guardando}
         />
 
-        {/* Los tags se muestran separados por coma. */}
-        <label>Características adicionales (separadas por coma)</label>
-        <input
-          name="tags"
-          defaultValue={propiedad.tags?.join(", ") ?? ""}
-          placeholder="pileta, cochera, balcón"
-          disabled={finalizada || guardando}
-        />
+        
+        {/* Mostramos marcadas las características que ya tiene la propiedad */}
+        <h2>Características de la propiedad</h2>
+
+        <div className="opciones-formulario-amenities">
+        {OPCIONES_AMENITIES.map((amenity) => (
+            <label key={amenity.valor}>
+            <input
+                type="checkbox"
+                name="tags"
+                value={amenity.valor}
+                //defaultChecked hace que al abrir la edicion aparezcan seleccionadas las caract que la prop tiene guardadas
+                defaultChecked={propiedad.tags?.includes(amenity.valor)}
+            />
+
+            {amenity.texto}
+            </label>
+        ))}
+        </div>
+
 
         {/* Si la propiedad está finalizada, ocultamos Guardar cambios. */}
         {!finalizada && (
@@ -581,13 +687,39 @@ export default function EditarPropiedad() {
 
       {/* map recorre el arreglo y crea una tarjeta por cada foto. */}
       <div className="fotos-editar">
-        {propiedad.fotos?.map((foto) => (
+        {fotosOrdenadas.map((foto, indice) => (
           <div className="tarjeta-foto-editar" key={foto.id}>
 
             <img
               src={foto.url}
               alt="Foto de la propiedad"
             />
+
+            {/* BOTONES PARA ORDENAR LAS FOTOS */}
+            {!finalizada && (
+            <div className="botones-orden-fotos">
+
+                {/* Mover la foto una posición hacia arriba */}
+                <button
+                type="button"
+                onClick={() => moverFoto(indice, -1)}
+                disabled={guardando || indice === 0}
+                >
+                ↑ Subir
+                </button>
+
+                {/* Mover la foto una posición hacia abajo */}
+                <button
+                type="button"
+                onClick={() => moverFoto(indice, 1)}
+                disabled={guardando || indice === fotosOrdenadas.length - 1}
+                >
+                ↓ Bajar
+                </button>
+
+            </div>
+            )}
+
 
             {/* Indicamos cuál es la portada actual. */}
             {foto.esPortada && <p>Portada actual</p>}
@@ -650,75 +782,120 @@ export default function EditarPropiedad() {
       )}
 
 
-      {/* CAMBIOS DE ESTADO */}
-      <h2>Estado de la propiedad</h2>
+      
+        {/* CAMBIOS DE ESTADO */}
+        <section className="seccion-estados">
 
-      {/* BORRADOR -> PUBLICADA */}
-      {/* Para publicar, el backend exige fotos y una portada. */}
-      {propiedad.estado === "BORRADOR" && (
-        <button
-          type="button"
-          onClick={() => cambiarEstado("PUBLICADA")}
-          disabled={guardando || !propiedad.fotos?.length}
-        >
-          Publicar propiedad
-        </button>
-      )}
+        <h2>Estado de la propiedad</h2>
 
-      {/* PUBLICADA -> PAUSADA o RESERVADA */}
-      {propiedad.estado === "PUBLICADA" && (
-        <>
-          <button
-            type="button"
-            onClick={() => cambiarEstado("PAUSADA")}
-            disabled={guardando}
-          >
-            Pausar publicación
-          </button>
+        {/* Mostramos el estado actual */}
+        <p className="estado-actual">
+            Estado actual:
+            <span>{propiedad.estado}</span>
+        </p>
 
-          <button
-            type="button"
-            onClick={() => cambiarEstado("RESERVADA")}
-            disabled={guardando}
-          >
-            Marcar como reservada
-          </button>
+        {/* Agrupamos las acciones principales */}
+        <div className="acciones-estado">
 
-          {/* Link al detalle público de la propiedad. */}
-          <Link to={`/propiedades/${propiedad.id}`}>
-            Ver publicación
-          </Link>
-        </>
-      )}
+            {/* BORRADOR -> PUBLICADA */}
+            {propiedad.estado === "BORRADOR" && (
+            <button
+                type="button"
+                onClick={() => cambiarEstado("PUBLICADA")}
+                disabled={guardando || !propiedad.fotos?.length}
+            >
+                Publicar propiedad
+            </button>
+            )}
 
-      {/* PAUSADA -> PUBLICADA */}
-      {propiedad.estado === "PAUSADA" && (
-        <button
-          type="button"
-          onClick={() => cambiarEstado("PUBLICADA")}
-          disabled={guardando}
-        >
-          Volver a publicar
-        </button>
-      )}
+            {/* PUBLICADA -> PAUSADA o RESERVADA */}
+            {propiedad.estado === "PUBLICADA" && (
+            <>
+                <button
+                type="button"
+                onClick={() => cambiarEstado("PAUSADA")}
+                disabled={guardando}
+                >
+                Pausar publicación
+                </button>
 
-      {/* RESERVADA -> VENDIDA o ALQUILADA */}
-      {/* El botón depende del tipo de operación. */}
-      {propiedad.estado === "RESERVADA" && (
-        <button
-          type="button"
-          onClick={() =>
-            cambiarEstado(
-              propiedad.operacion === "VENTA" ? "VENDIDA" : "ALQUILADA"
-            )
-          }
-          disabled={guardando}
-        >
-          {propiedad.operacion === "VENTA"
-            ? "Marcar como vendida"
-            : "Marcar como alquilada"}
-        </button>
-      )}
+                <button
+                type="button"
+                onClick={() => cambiarEstado("RESERVADA")}
+                disabled={guardando}
+                >
+                Marcar como reservada
+                </button>
+
+                <Link
+                to={`/propiedades/${propiedad.id}`}
+                className="boton-ver-publicacion"
+                >
+                Ver publicación
+                </Link>
+            </>
+            )}
+
+            {/* PAUSADA -> PUBLICADA */}
+            {propiedad.estado === "PAUSADA" && (
+            <button
+                type="button"
+                onClick={() => cambiarEstado("PUBLICADA")}
+                disabled={guardando}
+            >
+                Volver a publicar
+            </button>
+            )}
+
+            {/* RESERVADA -> VENDIDA o ALQUILADA */}
+            {propiedad.estado === "RESERVADA" && (
+            <button
+                type="button"
+                onClick={() =>
+                cambiarEstado(
+                    propiedad.operacion === "VENTA" ? "VENDIDA" : "ALQUILADA"
+                )
+                }
+                disabled={guardando}
+            >
+                {propiedad.operacion === "VENTA"
+                ? "Marcar como vendida"
+                : "Marcar como alquilada"}
+            </button>
+            )}
+
+            {/* Si ya finalizó, no hay más cambios posibles */}
+            {finalizada && (
+            <p>Esta propiedad ya no admite cambios de estado.</p>
+            )}
+
+        </div>
+
+        {/* Separamos la cancelación de las demás acciones */}
+        {!finalizada && (
+            <div className="zona-cancelar">
+
+            <p>Esta acción no se puede deshacer.</p>
+
+            <button
+                type="button"
+                className="boton-cancelar-propiedad"
+                disabled={guardando}
+                onClick={() => {
+                if (window.confirm(
+                    "¿Estás segura de que querés cancelar esta propiedad?"
+                )) {
+                    cambiarEstado("CANCELADA");
+                }
+                }}
+            >
+                Cancelar propiedad
+            </button>
+
+            </div>
+        )}
+
+        </section>
 
 
       {/* MENSAJES DE RESULTADO */}

@@ -70,3 +70,43 @@
 .error-consultas {
   color: red;
 }
+
+/* ADAPTACIÓN DE CONSULTAS PARA CELULARES */
+@media (max-width: 600px) {
+
+  /* Reducimos los espacios laterales */
+  .pagina-consultas {
+    margin: 20px auto;
+    padding: 15px;
+  }
+
+  /* Las tarjetas se adaptan al ancho del celular */
+  .tarjeta-consulta {
+    padding: 15px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Ajustamos los títulos */
+  .tarjeta-consulta h2 {
+    font-size: 19px;
+  }
+
+  /* Evitamos que el formulario se salga de la tarjeta */
+  .formulario-respuesta {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* El campo de respuesta ocupa todo el ancho */
+  .formulario-respuesta textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Botón cómodo para tocar desde el celular */
+  .formulario-respuesta button {
+    width: 100%;
+    align-self: stretch;
+  }
+}

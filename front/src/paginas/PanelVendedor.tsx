@@ -1,7 +1,58 @@
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { API_URL } from "../servicios/api";
 import "../estilos/PanelVendedor.css";
 
 export default function PanelVendedor() {
+
+  // Guardamos la cantidad de notificaciones sin leer.
+  const [noLeidas, setNoLeidas] = useState(0);
+
+  // Recuperamos los datos del vendedor que inició sesión.
+  const token = localStorage.getItem("token");
+  const inmobiliariaId = localStorage.getItem("inmobiliariaId");
+
+
+  // Consultamos las notificaciones cuando entramos al panel.
+  useEffect(() => {
+
+    async function cargarNotificaciones() {
+
+      // Sin sesión no podemos consultar las actividades privadas.
+      if (!token || !inmobiliariaId) return;
+
+      try {
+
+        // El backend devuelve cuántas actividades están sin leer.
+        const res = await fetch(
+          `${API_URL}/actividades/inmobiliaria/${inmobiliariaId}/no-leidas`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error("No se pudieron cargar las notificaciones.");
+        }
+
+        // La respuesta tiene la forma { cantidad: 3 }.
+        const datos: { cantidad: number } = await res.json();
+
+        // Guardamos el número recibido para mostrarlo en pantalla.
+        setNoLeidas(datos.cantidad);
+
+      } catch (error) {
+        console.error("Error al cargar notificaciones:", error);
+      }
+    }
+
+    cargarNotificaciones();
+
+  }, [token, inmobiliariaId]);
+
+
   return (
     <main className="panel-vendedor">
 
@@ -27,7 +78,19 @@ export default function PanelVendedor() {
         </Link>
 
         <Link to="/panel/actividad" className="opcion-panel">
-          <h2>Actividad</h2>
+
+          {/* Título y contador de notificaciones */}
+          <div className="titulo-actividad-panel">
+            <h2>Actividad</h2>
+
+            {/* Solo aparece cuando hay notificaciones sin leer. */}
+            {noLeidas > 0 && (
+              <span className="contador-notificaciones">
+                {noLeidas} sin leer
+              </span>
+            )}
+          </div>
+
           <p>Revisá las novedades de tu inmobiliaria.</p>
         </Link>
 

@@ -171,8 +171,12 @@ export default function DetallePropiedad() {
             <section className="datos-inmobiliaria">
                 <h2>Publicado por</h2>
 
-                {/* Nombre de la inmobiliaria. */}
-                <h3>{propiedad.inmobiliaria.nombre}</h3>
+                {/* Enlace al perfil público de la inmobiliaria */}
+                <h3>
+                    <Link to={`/inmobiliarias/${propiedad.inmobiliaria.id}`}>
+                        {propiedad.inmobiliaria.nombre}
+                    </Link>
+                </h3>
 
                 {/* Descripción de la inmobiliaria. */}
                 <p>{propiedad.inmobiliaria.descripcion}</p>

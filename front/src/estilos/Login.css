@@ -42,3 +42,18 @@
 .error-login {
   color: #c62828;
 }
+/* Enlace para crear una cuenta */
+.enlace-registro {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.enlace-registro a {
+  color: #2563eb;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.enlace-registro a:hover {
+  text-decoration: underline;
+}

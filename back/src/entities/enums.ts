@@ -44,6 +44,6 @@ export enum TipoActividad {
   // Una propiedad cambió de estado.
   CAMBIO_ESTADO_PROPIEDAD = "CAMBIO_ESTADO_PROPIEDAD",
 
-  // Alguien dejó una nueva reseña.
-  RESENA = "RESENA",
+  /// Alguien dejó una nueva reseña.
+  RESEÑA = "RESEÑA",
 }

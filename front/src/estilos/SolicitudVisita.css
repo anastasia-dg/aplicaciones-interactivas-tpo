@@ -64,3 +64,22 @@
 .exito-visita {
   color: #21803b;
 }
+
+
+/* Aviso cuando la fecha de una visita ya pasó */
+.aviso-visita-vencida {
+  margin-top: 15px;
+  padding: 12px 15px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  color: #1e3a8a;
+  font-size: 14px;
+}
+
+/* Aspecto de los botones deshabilitados */
+.tarjeta-solicitud button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

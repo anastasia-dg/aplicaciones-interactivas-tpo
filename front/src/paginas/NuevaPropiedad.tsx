@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { API_URL } from "../servicios/api";
 import "../estilos/NuevaPropiedad.css";
+import { OPCIONES_AMENITIES } from "../tipos/amenities";
 
 // Definimos cómo será cada foto antes de guardarla.
 type FotoNueva = {
@@ -86,11 +87,33 @@ export default function NuevaPropiedad() {
       setError("Agregá al menos una foto de la propiedad.");
       return;
     }
+    
+    // FormData obtiene los datos escritos en el formulario
+    const datos = new FormData(e.currentTarget);
 
+    // Campos de texto obligatorios.
+    const camposObligatorios = [
+      "titulo",
+      "descripcion",
+      "direccion",
+      "zona",
+    ];
+
+    // some() comprueba si al menos un campo está vacío.
+    // trim() quita espacios al principio y al final.
+    const hayCamposVacios = camposObligatorios.some(
+      (campo) => !String(datos.get(campo) ?? "").trim()
+    );
+
+    // Si hay un campo vacío, mostramos el error y no guardamos.
+    if (hayCamposVacios) {
+      setError("Completá todos los campos obligatorios.");
+      return;
+    }
+
+    // comenzamos a guardar la propiedad.
     setCargando(true);
 
-    // FormData obtiene los valores de los campos del formulario.
-    const datos = new FormData(e.currentTarget);
 
     const token = localStorage.getItem("token");
     const inmobiliariaId = Number(localStorage.getItem("inmobiliariaId"));
@@ -103,20 +126,22 @@ export default function NuevaPropiedad() {
 
     // Armamos el objeto con los datos de la propiedad.
     const propiedad = {
-      titulo: datos.get("titulo"),
-      descripcion: datos.get("descripcion"),
+      titulo: String(datos.get("titulo")).trim(),
+      descripcion: String(datos.get("descripcion")).trim(),
       tipo: datos.get("tipo"),
       operacion: datos.get("operacion"),
       precio: Number(datos.get("precio")),
       moneda: datos.get("moneda"),
-      direccion: datos.get("direccion"),
-      zona: datos.get("zona"),
+      direccion: String(datos.get("direccion")).trim(),
+      zona: String(datos.get("zona")).trim(),
       superficieTotalM2: Number(datos.get("superficieTotalM2")),
       superficieCubiertaM2: numeroOpcional("superficieCubiertaM2"),
       ambientes: numeroOpcional("ambientes"),
       dormitorios: numeroOpcional("dormitorios"),
       banios: numeroOpcional("banios"),
       antiguedadAnios: numeroOpcional("antiguedadAnios"),
+      // getAll() obtiene todos los checkboxes marcados con name="tags".
+      tags: datos.getAll("tags").map((tag) => String(tag)),
       inmobiliariaId,
     };
 
@@ -267,6 +292,24 @@ export default function NuevaPropiedad() {
 
         <label>Antigüedad (años)</label>
         <input name="antiguedadAnios" type="number" min="0" />
+        
+        {/* Amenities disponibles para esta propiedad */}
+        <h2>Características de la propiedad</h2>
+
+        <div className="opciones-formulario-amenities">
+        {OPCIONES_AMENITIES.map((amenity) => (
+            <label key={amenity.valor}>
+            <input
+                type="checkbox"
+                name="tags"
+                value={amenity.valor}
+            />
+
+            {amenity.texto}
+            </label>
+        ))}
+        </div>
+
 
 
         {/* SECCIÓN DE FOTOS */}

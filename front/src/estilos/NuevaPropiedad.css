@@ -82,3 +82,73 @@
   margin-top: 8px;
   padding: 10px;
 }
+
+/* Lista de características de la propiedad */
+.opciones-formulario-amenities {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin: 10px 0 25px;
+}
+
+/* Cada checkbox y su texto aparecen uno al lado del otro */
+.opciones-formulario-amenities label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Evitamos que los checkboxes ocupen todo el ancho */
+.opciones-formulario-amenities input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* En celulares mostramos una sola columna */
+@media (max-width: 600px) {
+  .opciones-formulario-amenities {
+    grid-template-columns: 1fr;
+  }
+  /* Reducimos los márgenes de la página */
+  .pagina-nueva-propiedad {
+    margin: 20px auto;
+    padding: 15px;
+  }
+
+  /* Los campos ocupan todo el ancho disponible */
+  .pagina-nueva-propiedad input,
+  .pagina-nueva-propiedad select,
+  .pagina-nueva-propiedad textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  /* Los botones quedan cómodos para tocar */
+  .pagina-nueva-propiedad button {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Las fotos se muestran una debajo de otra */
+  .fotos-nueva-propiedad {
+    flex-direction: column;
+  }
+
+  /* Cada tarjeta de foto ocupa el ancho disponible */
+  .foto-nueva {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Ajustamos la altura de las imágenes */
+  .foto-nueva img {
+    height: 200px;
+  }
+}

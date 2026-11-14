@@ -76,7 +76,7 @@ class ResenaService {
     await actividadService.crear({
 
       // Indicamos que ocurrió una nueva reseña.
-      tipo: TipoActividad.RESENA,
+      tipo: TipoActividad.RESEÑA,
 
       // Texto para mostrar en la actividad
       descripcion:

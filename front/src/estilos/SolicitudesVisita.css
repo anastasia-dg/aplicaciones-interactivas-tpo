@@ -39,6 +39,10 @@
   cursor: pointer;
 }
 
+.tarjeta-solicitud button:hover {
+    background-color: #1E3A8A;
+}
+
 /* Botón deshabilitado mientras se actualiza. */
 .tarjeta-solicitud button:disabled {
   opacity: 0.6;
@@ -48,4 +52,39 @@
 /* Mensajes de error. */
 .error-solicitudes {
   color: #c62828;
+}
+
+/* Permitimos que los botones se acomoden si falta espacio */
+.botones-solicitud {
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+/* Botón para rechazar */
+.tarjeta-solicitud .boton-rechazar {
+  background-color: #64748b;
+}
+
+.tarjeta-solicitud .boton-rechazar:hover {
+  background-color: #475569;
+}
+
+/* Botón para cancelar */
+.tarjeta-solicitud .boton-cancelar-visita {
+  background-color: #dc2626;
+}
+
+.tarjeta-solicitud .boton-cancelar-visita:hover {
+  background-color: #b91c1c;
+}
+
+/* En celulares los botones ocupan todo el ancho */
+@media (max-width: 600px) {
+  .botones-solicitud {
+    flex-direction: column;
+  }
+
+  .botones-solicitud button {
+    width: 100%;
+  }
 }

@@ -49,20 +49,129 @@
   color: white; /* Mantiene las letras blancas */
 }
 
-/* Estilos para celulares y pantallas de hasta 650px de ancho */
+
+/* ADAPTACIÓN DEL ENCABEZADO PARA CELULARES */
 @media (max-width: 650px) {
 
-  /* Cambios del encabezado en celulares */
+  /* Colocamos el logo arriba y el menú debajo */
   .encabezado {
-    flex-direction: column; /* Coloca el logo arriba y el menú debajo */
-    gap: 15px; /* Deja 15px de separación entre el logo y el menú */
-    padding: 20px; /* Deja 20px de espacio en todos los lados */
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 15px;
   }
 
-  /* Cambios del menú en celulares */
+  /* Reducimos un poco el tamaño del logo */
+  .logo {
+    font-size: 24px;
+  }
+
+  /* El menú ocupa todo el ancho disponible */
   .menu {
-    flex-wrap: wrap; /* Permite que los enlaces bajen de línea si no entran */
-    justify-content: center; /* Centra los enlaces horizontalmente */
-    gap: 15px; /* Deja 15px de separación entre los enlaces */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+  }
+
+  /* Centramos los enlaces */
+  .menu a {
+    text-align: center;
+    font-size: 14px;
+  }
+
+  /* El botón de ingreso ocupa su propia fila */
+  .menu .boton-ingresar {
+    width: 100%;
+    max-width: 320px;
+    box-sizing: border-box;
+    text-align: center;
+    padding: 12px;
+  }
+}
+
+
+/* Botón para registrar un vendedor y su inmobiliaria */
+.menu .boton-registro {
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  padding: 10px 18px;
+  border-radius: 8px;
+}
+
+.menu .boton-registro:hover {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* Botón para cerrar sesión */
+.menu .boton-cerrar-sesion {
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Cambiamos el color cuando pasamos el mouse */
+.menu .boton-cerrar-sesion:hover {
+  background-color: #172554;
+}
+
+/* Adaptación del botón para celulares */
+@media (max-width: 650px) {
+  .menu .boton-cerrar-sesion {
+    width: 100%;
+    max-width: 320px;
+    padding: 12px;
+  }
+}
+/* Logo de InmoPoint */
+.encabezado .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+/* Ícono de la casa */
+.logo-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1e3a8a;
+}
+
+/* Nombre */
+.logo-texto {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: #1e3a8a;
+}
+
+/* La palabra Point en otro tono de azul */
+.logo-texto span {
+  color: #2563eb;
+}
+
+/* Adaptación para celulares */
+@media (max-width: 600px) {
+  .logo-icono svg {
+    width: 23px;
+    height: 23px;
+  }
+
+  .logo-texto {
+    font-size: 22px;
+  }
+
+  .encabezado .logo {
+    gap: 6px;
   }
 }

@@ -56,6 +56,24 @@ export default function SolicitudesVisita() {
 
   // Cambia el estado de una solicitud en el backend.
   async function cambiarEstado(id: number, nuevoEstado: string) {
+    
+    // Para cancelar o rechazar una visita pedimos confirmación
+    // Son acciones que no se pueden revertir
+
+    if (
+      nuevoEstado === "CANCELADA" ||
+      nuevoEstado === "RECHAZADA"
+    ) {
+      const confirmar = window.confirm(
+        nuevoEstado === "CANCELADA"
+          ? "¿Querés cancelar esta solicitud de visita?"
+          : "¿Querés rechazar esta solicitud de visita?"
+      );
+
+      // Si presiona Cancelar, no hacemos ningún cambio.
+      if (!confirmar) return;
+    }
+
     setActualizando(id);
     setError("");
 
@@ -105,6 +123,20 @@ export default function SolicitudesVisita() {
       // Volvemos a habilitar los botones.
       setActualizando(null);
     }
+  }
+
+  
+  // COMPROBAR SI LA FECHA DE UNA VISITA YA PASÓ
+  function fechaVencida(fechaHora: string): boolean {
+
+    // Convertimos la fecha guardada en un objeto Date.
+    const fechaVisita = new Date(fechaHora);
+
+    // Obtenemos la fecha y hora actuales.
+    const ahora = new Date();
+
+    // Devuelve true si la fecha ya pasó.
+    return fechaVisita <= ahora;
   }
 
 
@@ -161,42 +193,108 @@ export default function SolicitudesVisita() {
             </span>
           </p>
 
-          {/* Si está pendiente, mostramos Confirmar y Rechazar. */}
-          {solicitud.estado === "PENDIENTE" && (
-            <div className="botones-solicitud">
+         
+        {/* ACCIONES PARA SOLICITUDES PENDIENTES */}
+        {solicitud.estado === "PENDIENTE" && (
+        <div className="botones-solicitud">
 
-              <button
-                disabled={actualizando === solicitud.id}
-                onClick={() =>
-                  cambiarEstado(solicitud.id, "CONFIRMADA")
-                }
-              >
-                Confirmar
-              </button>
-
-              <button
-                disabled={actualizando === solicitud.id}
-                onClick={() =>
-                  cambiarEstado(solicitud.id, "RECHAZADA")
-                }
-              >
-                Rechazar
-              </button>
-
-            </div>
-          )}
-
-          {/* Si está confirmada, podemos marcarla como realizada. */}
-          {solicitud.estado === "CONFIRMADA" && (
+            {/* Confirmar la visita */}
+           
+            {/* Solo podemos confirmar una visita si su fecha es futura */}
             <button
-              disabled={actualizando === solicitud.id}
-              onClick={() =>
-                cambiarEstado(solicitud.id, "REALIZADA")
-              }
+            type="button"
+            disabled={
+                actualizando !== null ||
+                fechaVencida(solicitud.fechaHoraPropuesta)
+            }
+            onClick={() =>
+                cambiarEstado(solicitud.id, "CONFIRMADA")
+            }
             >
-              Marcar como realizada
+            Confirmar
             </button>
-          )}
+
+            {/* Rechazar la solicitud */}
+            <button
+            type="button"
+            className="boton-rechazar"
+            disabled={actualizando !== null}
+            onClick={() =>
+                cambiarEstado(solicitud.id, "RECHAZADA")
+            }
+            >
+            Rechazar
+            </button>
+
+            {/* Cancelar la solicitud */}
+            <button
+            type="button"
+            className="boton-cancelar-visita"
+            disabled={actualizando !== null}
+            onClick={() =>
+                cambiarEstado(solicitud.id, "CANCELADA")
+            }
+            >
+            Cancelar
+            </button>
+            
+            {/* Avisamos cuando la fecha propuesta ya pasó */}
+            {solicitud.estado === "PENDIENTE" &&
+            fechaVencida(solicitud.fechaHoraPropuesta) && (
+                <p className="aviso-visita-vencida">
+                La fecha de esta visita ya pasó.
+                No se puede confirmar la solicitud.
+                </p>
+            )}
+
+
+        </div>
+        )}
+
+
+          
+{/* ACCIONES PARA SOLICITUDES CONFIRMADAS */}
+{solicitud.estado === "CONFIRMADA" && (
+  <div className="botones-solicitud">
+
+    {/* La visita ya se realizó */}
+    <button
+      type="button"
+      disabled={actualizando !== null}
+      onClick={() =>
+        cambiarEstado(solicitud.id, "REALIZADA")
+      }
+    >
+      Marcar como realizada
+    </button>
+
+    {/* Rechazar una visita confirmada */}
+    <button
+      type="button"
+      className="boton-rechazar"
+      disabled={actualizando !== null}
+      onClick={() =>
+        cambiarEstado(solicitud.id, "RECHAZADA")
+      }
+    >
+      Rechazar
+    </button>
+
+            {/* Cancelar una visita confirmada */}
+            <button
+            type="button"
+            className="boton-cancelar-visita"
+            disabled={actualizando !== null}
+            onClick={() =>
+                cambiarEstado(solicitud.id, "CANCELADA")
+            }
+            >
+            Cancelar
+            </button>
+
+        </div>
+        )}
+
 
         </article>
       ))}

@@ -1,0 +1,111 @@
+/* Contenedor principal */
+.pagina-registro {
+  max-width: 650px;
+  margin: 40px auto;
+  padding: 30px;
+}
+
+.pagina-registro h1 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.pagina-registro > p {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+/* Formulario de registro */
+.pagina-registro form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 30px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+/* Títulos de cada sección */
+.pagina-registro h2 {
+  font-size: 20px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.pagina-registro h2:first-child {
+  margin-top: 0;
+}
+
+/* Campos del formulario */
+.pagina-registro label {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.pagina-registro input,
+.pagina-registro textarea {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pagina-registro textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Botón para crear la cuenta */
+.pagina-registro button {
+  padding: 13px;
+  margin-top: 15px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.pagina-registro button:hover {
+  background-color: #1d4ed8;
+}
+
+.pagina-registro button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+/* Mensaje cuando ocurre un error */
+.pagina-registro .mensaje-error {
+  color: #c62828;
+  text-align: center;
+}
+
+/* Enlace para iniciar sesión */
+.pagina-registro > p a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.pagina-registro > p a:hover {
+  text-decoration: underline;
+}
+
+/* Adaptación a pantallas pequeñas */
+@media (max-width: 600px) {
+  .pagina-registro {
+    margin: 20px auto;
+    padding: 15px;
+  }
+
+  .pagina-registro form {
+    padding: 20px;
+  }
+}

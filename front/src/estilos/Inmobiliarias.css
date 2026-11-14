@@ -1,0 +1,91 @@
+/* Contenedor principal */
+.pagina-inmobiliarias {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px;
+}
+
+.pagina-inmobiliarias h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.pagina-inmobiliarias > p {
+  color: #555;
+}
+
+/* Organizamos las inmobiliarias en columnas */
+.grilla-inmobiliarias {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 30px;
+}
+
+/* Tarjetas de las inmobiliarias */
+.tarjeta-inmobiliaria {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Logo de la inmobiliaria */
+.tarjeta-inmobiliaria img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  background-color: #fafafa;
+}
+
+/* Espacio cuando la inmobiliaria no tiene logo */
+.sin-logo {
+  height: 180px;
+  display: grid;
+  place-items: center;
+  background-color: #eee;
+  color: #777;
+}
+
+/* Información dentro de cada tarjeta */
+.contenido-inmobiliaria {
+  padding: 20px;
+}
+
+.contenido-inmobiliaria h2 {
+  font-size: 21px;
+  margin-top: 0;
+}
+
+.contenido-inmobiliaria p {
+  color: #555;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* Botón para entrar al perfil público */
+.boton-ver-inmobiliaria {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 11px 18px;
+  background-color: #2563eb;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.boton-ver-inmobiliaria:hover {
+  background-color: #1d4ed8;
+}
+
+/* Adaptación a celulares */
+@media (max-width: 600px) {
+  .pagina-inmobiliarias {
+    padding: 15px;
+  }
+
+  .grilla-inmobiliarias {
+    grid-template-columns: 1fr;
+  }
+}

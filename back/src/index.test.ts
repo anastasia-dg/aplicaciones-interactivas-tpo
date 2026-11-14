@@ -2085,7 +2085,7 @@ describe("Reseñas — creación y consulta", () => {
 
     expect(respuesta.status).toBe(200);
     expect(respuesta.body).toHaveLength(1);
-    expect(respuesta.body[0].tipo).toBe(TipoActividad.RESENA);
+    expect(respuesta.body[0].tipo).toBe(TipoActividad.RESEÑA);
 
   });
 

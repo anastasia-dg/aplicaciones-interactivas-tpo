@@ -12,6 +12,9 @@ export default function MisPropiedades() {
   // Controlamos la carga y los errores.
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  // Guardamos el ID de la propiedad que se está eliminando.
+  // null significa que no estamos eliminando ninguna.
+  const [eliminando, setEliminando] = useState<number | null>(null);
 
   // Buscamos las propiedades cuando se abre la página.
   useEffect(() => {
@@ -42,9 +45,70 @@ export default function MisPropiedades() {
         setCargando(false);
       }
     }
-
     cargarPropiedades();
   }, []);
+  
+  // ELIMINAR UNA PROPIEDAD
+  async function eliminarPropiedad(id: number) {
+
+    // Pedimos confirmación antes de eliminar definitivamente.
+    const confirmar = window.confirm(
+      "¿Estás segura de que querés eliminar esta propiedad? Esta acción no se puede deshacer."
+    );
+
+    // Si el vendedor cancela, detenemos la función.
+    if (!confirmar) return;
+
+    setError("");
+    setEliminando(id);
+
+    try {
+
+      // Recuperamos el token del vendedor.
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Iniciá sesión nuevamente.");
+      }
+
+      // DELETE solicita al backend eliminar la propiedad indicada.
+      const res = await fetch(`${API_URL}/propiedades/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // El backend puede rechazar la eliminación
+      // si la propiedad tiene visitas confirmadas o está finalizada.
+      if (!res.ok) {
+        const datos = await res.json();
+
+        throw new Error(
+          datos.mensaje || "No se pudo eliminar la propiedad."
+        );
+      }
+
+      // filter() crea un nuevo array sin la propiedad eliminada.
+      // Así desaparece de la pantalla sin tener que recargarla.
+      setPropiedades((anteriores) =>
+        anteriores.filter((propiedad) => propiedad.id !== id)
+      );
+
+    } catch (err) {
+
+      // Mostramos el error que devuelve el backend.
+      setError(
+        err instanceof Error ? err.message : "Ocurrió un error."
+      );
+
+    } finally {
+
+      // Habilitamos nuevamente los botones.
+      setEliminando(null);
+    }
+  }
+
 
   // Mostramos un mensaje mientras esperamos la respuesta.
   if (cargando) return <p>Cargando propiedades...</p>;
@@ -95,10 +159,32 @@ export default function MisPropiedades() {
 
                 <p>Estado: {propiedad.estado}</p>
 
-                {/* edición de propiedades. */}
-                <Link to={`/panel/propiedades/${propiedad.id}/editar`}>
-                  Editar propiedad
-                </Link>
+                
+            {/* Acciones disponibles para cada propiedad */}
+            <div className="acciones-mi-propiedad">
+
+            {/* Accedemos al formulario de edición */}
+            <Link
+                to={`/panel/propiedades/${propiedad.id}/editar`}
+                className="boton-editar-propiedad"
+            >
+                Editar propiedad
+            </Link>
+
+            {/* No permitimos eliminar propiedades finalizadas */}
+            {!["VENDIDA", "ALQUILADA", "CANCELADA"].includes(propiedad.estado) && (
+                <button
+                type="button"
+                className="boton-eliminar-propiedad"
+                onClick={() => eliminarPropiedad(propiedad.id)}
+                disabled={eliminando !== null}
+                >
+                {eliminando === propiedad.id ? "Eliminando..." : "Eliminar"}
+                </button>
+            )}
+
+            </div>
+
               </div>
 
             </article>

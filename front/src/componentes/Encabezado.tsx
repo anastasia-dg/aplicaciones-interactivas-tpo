@@ -1,28 +1,96 @@
-import { Link } from "react-router-dom"; //trae el componente de React Router para navegar sin recargar la página
-import "../estilos/Encabezado.css"; //para aplicar los estilos al encabezado
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import "../estilos/Encabezado.css";
 
-// Componente que muestra el encabezado de la página.
-export default function Encabezado() { //crea nuestro componente
-    //header representa la parte superior de la página
-    //nav contiene los enlaces del menú
-    //<Link to="/">: lleva al inicio
-    //className: permite aplicar estilos CSS
-    //export default: permite utilizar el componente desde otros archivos
+export default function Encabezado() {
+
+  // Permite cambiar de página desde el código.
+  const navigate = useNavigate();
+
+  // Hace que el encabezado se actualice al navegar.
+  useLocation();
+
+  // Comprobamos si hay una sesión iniciada.
+  const token = localStorage.getItem("token");
+
+  // CERRAR SESIÓN
+  function cerrarSesion() {
+
+    // Eliminamos los datos guardados del vendedor.
+    localStorage.removeItem("token");
+    localStorage.removeItem("inmobiliariaId");
+
+    // Redirigimos al inicio.
+    navigate("/");
+  }
+
   return (
-    <header className="encabezado">  
-      {/* Nombre del marketplace */}
-      <Link to="/" className="logo">
-        InmoMarket
-      </Link>
+    <header className="encabezado">
 
-      {/* Menú de navegación */}
+      {/* Logo de InmoPoint */}
+        <Link to="/" className="logo">
+
+        {/* Ícono de una casita */}
+        <span className="logo-icono">
+            <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            >
+            <path d="m3 10 9-7 9 7" />
+            <path d="M5 9v12h14V9" />
+            <path d="M9 21v-7h6v7" />
+            </svg>
+        </span>
+
+        {/* Nombre de la plataforma */}
+        <span className="logo-texto">
+            Inmo<span>Point</span>
+        </span>
+
+        </Link>
+
       <nav className="menu">
+
+        {/* Enlaces públicos */}
         <Link to="/">Inicio</Link>
         <Link to="/inmobiliarias">Inmobiliarias</Link>
-        <Link to="/login" className="boton-ingresar">
-          Ingresar como vendedor
-        </Link>
+
+        {/* Mostramos distintas opciones según la sesión */}
+        {token ? (
+
+          <>
+            {/* Si inició sesión, puede entrar al panel */}
+            <Link to="/panel">
+              Mi panel
+            </Link>
+
+            {/* Botón para cerrar sesión */}
+            <button
+              type="button"
+              className="boton-cerrar-sesion"
+              onClick={cerrarSesion}
+            >
+              Cerrar sesión
+            </button>
+          </>
+
+        ) : (
+
+          /* Si no inició sesión, mostramos el ingreso */
+          <Link to="/login" className="boton-ingresar">
+            Ingresar como vendedor
+          </Link>
+
+        )}
+
       </nav>
+
     </header>
   );
 }

@@ -70,3 +70,50 @@
 .error-reportes {
   color: red;
 }
+
+/* ADAPTACIÓN DE REPORTES PARA CELULARES */
+@media (max-width: 600px) {
+
+  /* Reducimos los márgenes y espacios */
+  .pagina-reportes {
+    margin: 20px auto;
+    padding: 15px;
+  }
+
+  /* Mostramos las estadísticas una debajo de la otra */
+  .resumen-reportes {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin: 20px 0;
+  }
+
+  /* Reducimos el espacio de las tarjetas */
+  .tarjeta-reporte {
+    padding: 20px;
+  }
+
+  /* Ajustamos el tamaño de los números */
+  .tarjeta-reporte p {
+    font-size: 24px;
+  }
+
+  /* Reducimos los espacios entre secciones */
+  .seccion-reporte {
+    margin-top: 25px;
+    min-width: 0;
+  }
+
+  /* Las tablas se adaptan al ancho disponible */
+  .seccion-reporte table {
+    width: 100%;
+    font-size: 13px;
+    table-layout: auto;
+  }
+
+  /* Reducimos el espacio interno de las celdas */
+  .seccion-reporte th,
+  .seccion-reporte td {
+    padding: 8px;
+    overflow-wrap: anywhere;
+  }
+}

@@ -98,6 +98,24 @@
     width: 85px;
     height: 60px;
   }
+  
+/* Menos espacio lateral en celulares */
+.detalle-propiedad {
+  padding: 15px;
+}
+
+/* Evitamos que el título sea demasiado grande */
+.detalle-propiedad h1 {
+  font-size: 25px;
+  overflow-wrap: anywhere;
+}
+
+/* Los datos de contacto no deben desbordar */
+.datos-inmobiliaria {
+  padding: 15px;
+  overflow-wrap: anywhere;
+}
+
 }
 
 

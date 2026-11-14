@@ -91,8 +91,238 @@
   color: red;
 }
 
+/* Lista de características de la propiedad */
+.opciones-formulario-amenities {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin: 10px 0 25px;
+}
+
+/* Cada checkbox y su texto aparecen uno al lado del otro */
+.opciones-formulario-amenities label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Evitamos que los checkboxes ocupen todo el ancho */
+.opciones-formulario-amenities input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* En celulares mostramos una sola columna */
+@media (max-width: 600px) {
+  .opciones-formulario-amenities {
+    grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 600px) {
   .tarjeta-foto-editar {
     width: 100%;
   }
+}
+
+
+/* Contenedor de los cambios de estado */
+.seccion-estados {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 35px;
+}
+
+.seccion-estados h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+/* Estado actual */
+.estado-actual {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.estado-actual span {
+  background-color: #e0f2fe;
+  color: #075985;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* Acciones principales */
+.acciones-estado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Todos los botones con las mismas medidas */
+.pagina-editar-propiedad .acciones-estado button,
+.pagina-editar-propiedad .boton-ver-publicacion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 18px;
+  margin: 0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+/* Botón para ver la publicación */
+.pagina-editar-propiedad .boton-ver-publicacion {
+  border: 1px solid #2563eb;
+  background-color: white;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.pagina-editar-propiedad .boton-ver-publicacion:hover {
+  background-color: #eff6ff;
+}
+
+/* Zona de cancelación separada */
+.zona-cancelar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  border-top: 1px solid #eee;
+  margin-top: 25px;
+  padding-top: 20px;
+}
+
+.zona-cancelar p {
+  color: #777;
+  font-size: 13px;
+}
+
+/* Botón rojo para cancelar */
+.pagina-editar-propiedad .zona-cancelar .boton-cancelar-propiedad {
+  background-color: #dc2626;
+  color: white;
+  border-radius: 8px;
+  padding: 12px 18px;
+  margin: 0;
+}
+
+.pagina-editar-propiedad .zona-cancelar .boton-cancelar-propiedad:hover {
+  background-color: #b91c1c;
+}
+
+/* Adaptación a celulares */
+@media (max-width: 600px) {
+  .seccion-estados {
+    padding: 18px;
+  }
+
+  .acciones-estado {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .acciones-estado button,
+  .boton-ver-publicacion {
+    width: 100%;
+  }
+
+  .zona-cancelar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .zona-cancelar .boton-cancelar-propiedad {
+    width: 100%;
+  }
+  /* Reducimos los márgenes de la página */
+  .pagina-editar-propiedad {
+    margin: 20px auto;
+    padding: 15px;
+  }
+
+  /* Evitamos que los formularios se desborden */
+  .pagina-editar-propiedad form {
+    min-width: 0;
+  }
+
+  /* Campos adaptados al ancho de pantalla */
+  .pagina-editar-propiedad input,
+  .pagina-editar-propiedad select,
+  .pagina-editar-propiedad textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  /* Los botones ocupan todo el ancho */
+  .pagina-editar-propiedad button {
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Las fotos se acomodan verticalmente */
+  .fotos-editar {
+    flex-direction: column;
+  }
+
+  /* Las tarjetas de fotos ocupan todo el ancho */
+  .tarjeta-foto-editar {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Ajustamos las imágenes */
+  .tarjeta-foto-editar img {
+    height: 200px;
+  }
+
+  /* Sección de estados sin desbordes */
+  .seccion-estados {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Contenedor de los botones para ordenar fotos */
+.botones-orden-fotos {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Botones de subir y bajar */
+.pagina-editar-propiedad .botones-orden-fotos button {
+  flex: 1;
+  width: auto;
+  padding: 9px;
+  margin: 0;
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Cuando el botón está deshabilitado */
+.pagina-editar-propiedad .botones-orden-fotos button:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
 }

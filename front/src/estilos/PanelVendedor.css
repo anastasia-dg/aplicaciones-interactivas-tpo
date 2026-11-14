@@ -37,3 +37,27 @@
 .opcion-panel p {
   color: #666;
 }
+
+/* Título de Actividad y contador */
+.titulo-actividad-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Quitamos el margen del título para alinearlo con el contador */
+.titulo-actividad-panel h2 {
+  margin: 0;
+}
+
+/* Número de notificaciones sin leer */
+.contador-notificaciones {
+  background-color: #dc2626;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}

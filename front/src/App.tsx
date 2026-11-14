@@ -15,6 +15,10 @@ import Consultas from "./paginas/Consultas";
 import Actividad from "./paginas/Actividad";
 import Reportes from "./paginas/Reportes";
 import MiInmobiliaria from "./paginas/MiInmobiliaria";
+import Registro from "./paginas/Registro";
+import PerfilInmobiliaria from "./paginas/PerfilInmobiliaria";
+import Inmobiliarias from "./paginas/Inmobiliarias";
+import RutaProtegida from "./componentes/RutaProtegida";
 
 // Componente temporal para mostrar el nombre de cada pantalla.
 function Pagina({ titulo }: { titulo: string }) {
@@ -34,22 +38,56 @@ export default function App() {
                     path="/propiedades/:id"
                     element={<DetallePropiedad />}
                 />
-                <Route path="/inmobiliarias/:id" element={<Pagina titulo="Perfil de inmobiliaria" />} />
-
+                {/* Listado público de todas las inmobiliarias */}
+                <Route path="/inmobiliarias" element={<Inmobiliarias />} />
+                {/* Perfil público de una inmobiliaria */}
+                <Route
+                    path="/inmobiliarias/:id"
+                    element={<PerfilInmobiliaria />}
+                />
                 {/* Registro e inicio de sesión */}
-                <Route path="/registro" element={<Pagina titulo="Registro" />} />
+                <Route path="/registro" element={<Registro />} />
                 <Route path="/login" element={<Login />} />
 
-                {/* Páginas del vendedor */}
+                
+                {/* PÁGINAS PRIVADAS DEL VENDEDOR */}
+                {/* Todas estas rutas necesitan que exista una sesión. */}
+                <Route element={<RutaProtegida />}>
+
                 <Route path="/panel" element={<PanelVendedor />} />
-                <Route path="/panel/propiedades" element={<MisPropiedades />} />
-                <Route path="/panel/propiedades/nueva" element={<NuevaPropiedad />} />
-                <Route path="/panel/propiedades/:id/editar" element={<EditarPropiedad />} />
-                <Route path="/panel/visitas" element={<SolicitudesVisita />} />
-                <Route path="/panel/consultas" element={<Consultas />} />
-                <Route path="/panel/actividad" element={<Actividad />} />
-                <Route path="/panel/reportes" element={<Reportes />} />
-                <Route path="/panel/inmobiliaria" element={<MiInmobiliaria />} />
+                <Route
+                    path="/panel/propiedades"
+                    element={<MisPropiedades />}
+                />
+                <Route
+                    path="/panel/propiedades/nueva"
+                    element={<NuevaPropiedad />}
+                />
+                <Route
+                    path="/panel/propiedades/:id/editar"
+                    element={<EditarPropiedad />}
+                />
+                <Route
+                    path="/panel/visitas"
+                    element={<SolicitudesVisita />}
+                />
+                <Route
+                    path="/panel/consultas"
+                    element={<Consultas />}
+                />
+                <Route
+                    path="/panel/actividad"
+                    element={<Actividad />}
+                />
+                <Route
+                    path="/panel/reportes"
+                    element={<Reportes />}
+                />
+                <Route
+                    path="/panel/inmobiliaria"
+                    element={<MiInmobiliaria />}
+                />
+                </Route>
 
                 {/* Página para direcciones que no existen */}
                 <Route path="*" element={<Pagina titulo="Página no encontrada" />} />

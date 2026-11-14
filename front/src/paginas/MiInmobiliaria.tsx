@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate} from "react-router";
 import { API_URL } from "../servicios/api";
 import type { Inmobiliaria } from "../tipos/Propiedad";
 import "../estilos/MiInmobiliaria.css";
@@ -12,7 +12,9 @@ export default function MiInmobiliaria() {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
-
+  const [eliminando, setEliminando] = useState(false);
+  // Nos permite cambiar de página después de eliminar
+  const navigate = useNavigate();
   // Recuperamos los datos guardados cuando el vendedor inició sesión.
   const token = localStorage.getItem("token");
   const inmobiliariaId = localStorage.getItem("inmobiliariaId");
@@ -122,6 +124,69 @@ export default function MiInmobiliaria() {
       setGuardando(false);
     }
   }
+  
+  // ELIMINAR INMOBILIARIA
+  async function eliminarInmobiliaria() {
+
+    // Pedimos confirmación porque es una acción irreversible.
+    const confirmar = window.confirm(
+      "¿Estás segura de que querés eliminar tu inmobiliaria? Esta acción no se puede deshacer."
+    );
+
+    // Si el usuario presiona Cancelar, no hacemos nada.
+    if (!confirmar) return;
+
+    setError("");
+    setMensaje("");
+    setEliminando(true);
+
+    try {
+
+      // Comprobamos que tengamos los datos de sesión.
+      if (!token || !inmobiliariaId) {
+        throw new Error("Iniciá sesión nuevamente.");
+      }
+
+      // DELETE le pide al backend que elimine la inmobiliaria.
+      const res = await fetch(
+        `${API_URL}/inmobiliarias/${inmobiliariaId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Si tiene propiedades publicadas o reservadas,
+      // el backend rechaza la eliminación.
+      if (!res.ok) {
+        const datos = await res.json();
+
+        throw new Error(
+          datos.message || "No se pudo eliminar la inmobiliaria."
+        );
+      }
+
+      // Eliminamos los datos de sesión que ya no son válidos.
+      localStorage.removeItem("token");
+      localStorage.removeItem("inmobiliariaId");
+
+      // Volvemos al inicio después de eliminar correctamente.
+      navigate("/");
+
+    } catch (err) {
+
+      // Mostramos el error que devuelve el backend.
+      setError(
+        err instanceof Error ? err.message : "Ocurrió un error."
+      );
+
+    } finally {
+      setEliminando(false);
+    }
+  }
+
 
 
   if (cargando) {
@@ -213,6 +278,32 @@ export default function MiInmobiliaria() {
       {/* Mensajes de éxito o error después de guardar. */}
       {mensaje && <p className="mensaje-inmobiliaria">{mensaje}</p>}
       {error && <p className="error-inmobiliaria">{error}</p>}
+      
+          {/* Sección para eliminar la inmobiliaria */}
+          <section className="seccion-eliminar-inmobiliaria">
+
+              <h2>Eliminar inmobiliaria</h2>
+
+              <p>
+                  Podés eliminar tu inmobiliaria siempre que no tenga
+                  propiedades publicadas ni reservadas.
+              </p>
+
+              <p>
+                  Esta acción es permanente y no se puede deshacer.
+              </p>
+
+              <button
+                  type="button"
+                  className="boton-eliminar-inmobiliaria"
+                  onClick={eliminarInmobiliaria}
+                  disabled={eliminando || guardando}
+              >
+                  {eliminando ? "Eliminando..." : "Eliminar inmobiliaria"}
+              </button>
+
+          </section>
+
 
     </main>
   );

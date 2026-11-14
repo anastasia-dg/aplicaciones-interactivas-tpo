@@ -70,3 +70,45 @@
   margin-top: 20px;
   color: red;
 }
+
+/* Sección para eliminar la inmobiliaria */
+.seccion-eliminar-inmobiliaria {
+  margin-top: 40px;
+  padding: 25px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+/* Título de la sección */
+.seccion-eliminar-inmobiliaria h2 {
+  margin-top: 0;
+  color: #b91c1c;
+}
+
+/* Explicación de la eliminación */
+.seccion-eliminar-inmobiliaria p {
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Botón rojo para indicar una acción destructiva */
+.boton-eliminar-inmobiliaria {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.boton-eliminar-inmobiliaria:hover {
+  background-color: #b91c1c;
+}
+
+/* Deshabilitamos el botón mientras se procesa */
+.boton-eliminar-inmobiliaria:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
